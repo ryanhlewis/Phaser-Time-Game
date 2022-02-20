@@ -17,3 +17,32 @@ var config = {
 };
 
 var game = new Phaser.Game(config);
+
+class LoadAssets extends Phaser.Scene {
+    // Load all assets for the first time, never again.
+    constructor() {
+        super("LoadAssets");
+    }
+    preload() {
+
+    }
+    create() {
+        
+    }
+}
+
+class InGame extends Phaser.Scene {
+
+    constructor() {
+        super("InGame");
+    }
+    preload() {
+        
+    }
+    create(data) {
+
+    }
+    update(delta,time) {
+
+    }
+}
