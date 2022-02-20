@@ -13,10 +13,16 @@ var config = {
             gravity: { y: 300 },
         },
     },
-    scene: [],
+    scene: [
+        LoadAssets/*,
+        InGame*/        
+    ],
 };
 
 var game = new Phaser.Game(config);
+
+// Global Variables
+var player;
 
 class LoadAssets extends Phaser.Scene {
     // Load all assets for the first time, never again.
@@ -24,14 +30,16 @@ class LoadAssets extends Phaser.Scene {
         super("LoadAssets");
     }
     preload() {
-
+        this.load.image('lab', 'assets/lab.png')
+        this.load.spritesheet('player', 'assets/player.png', { frameWidth: 32, frameHeight: 32 })
     }
     create() {
-        
+        this.add.image(0, 0, 'lab').setOrigin(0, 0);
+        player = this.physics.add.sprite(15, 250, 'player');
     }
 }
 
-class InGame extends Phaser.Scene {
+/*class InGame extends Phaser.Scene {
 
     constructor() {
         super("InGame");
@@ -45,4 +53,4 @@ class InGame extends Phaser.Scene {
     update(delta,time) {
 
     }
-}
+}*/
