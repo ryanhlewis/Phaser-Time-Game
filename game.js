@@ -12,10 +12,9 @@ class LoadAssets extends Phaser.Scene {
         super("LoadAssets");
     }
     preload() {
-        this.load.image('lab', 'assets/lab.png')
-        this.load.spritesheet('player', 'assets/player.png', { frameWidth: 48, frameHeight: 48 })
-        this.load.image("tiles","assets/lab.png");
-        this.load.tilemapTiledJSON('map',"assets/tilemap.json");
+        this.load.spritesheet('player', 'assets/spritesheets/player.png', { frameWidth: 48, frameHeight: 48 })
+        this.load.image("tiles","assets/tilesets/lab.png");
+        this.load.tilemapTiledJSON('map',"assets/maps/tilemap.json");
     }
     create () {
         this.scene.start("InGame");
@@ -73,6 +72,14 @@ class InGame extends Phaser.Scene {
             frameRate: 10,
             repeat: -1
         });
+
+        this.anims.create({
+            key: 'jump',
+            frames: this.anims.generateFrameNumbers('player', { start: 16, end: 17 }),
+            frameRate: 1,
+            repeat: -1
+        });
+
         cursors = this.input.keyboard.createCursorKeys();
     }
     update() {
@@ -82,7 +89,11 @@ class InGame extends Phaser.Scene {
                 
                 player.setVelocityX(-200);
 
-                player.anims.play('left', true);
+                if(player.body.onFloor())
+                    player.anims.play('left', true);
+                else
+                    player.anims.play('jump', true);
+
             }
             else if (cursors.right.isDown)
             {
@@ -90,13 +101,21 @@ class InGame extends Phaser.Scene {
                 
                 player.setVelocityX(200);
 
-                player.anims.play('right', true);
+                if(player.body.onFloor())
+                    player.anims.play('right', true);
+                else
+                    player.anims.play('jump', true);
+
             }
             else
             {
                 player.setVelocityX(0);
 
-                player.anims.play('stand');
+                if(player.body.onFloor())
+                    player.anims.play('stand');
+                else
+                    player.anims.play('jump', true);
+
             }
         
             if (cursors.up.isDown && player.body.onFloor())
