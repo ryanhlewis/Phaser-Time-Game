@@ -14,13 +14,45 @@ class LoadAssets extends Phaser.Scene {
     preload() {
         this.load.image('lab', 'assets/lab.png')
         this.load.spritesheet('player', 'assets/player.png', { frameWidth: 48, frameHeight: 48 })
+        this.load.image("tiles","assets/lab.png");
+        this.load.tilemapTiledJSON('map',"assets/tilemap.json");
     }
+    create () {
+        this.scene.start("InGame");
+    }
+}
+
+class InGame extends Phaser.Scene {
+
+    constructor() {
+        super("InGame");
+    }
+    preload() {
+        
+    }
+
     create() {
-        var floor = this.physics.add.staticGroup();
-        floor.create(50, 640, 'lab');
+        const map = this.make.tilemap({ key: "map", tileWidth: 16, tileHeight: 16});
+        const tileset = map.addTilesetImage("Lab","tiles");
+        const solidMap = map.createLayer("Solid", tileset, 0, 200);
+        const backMap = map.createLayer("Background", tileset, 0, 200);
+
+        solidMap.setScale(3,3);
+        backMap.setScale(3,3);
         
         player = this.physics.add.sprite(15, 250, 'player');
-        this.physics.add.collider(player, floor);
+        player.body.offset.y = -10;
+        player.y = 100;
+
+        player.setScale(3,3);
+
+        solidMap.setCollisionByExclusion([-1]);
+        this.physics.add.collider(player, solidMap);
+
+        this.cameras.main.startFollow(player);
+        this.cameras.main.setDeadzone(100, 200);
+
+
         
         this.anims.create({
             key: 'stand',
@@ -48,7 +80,7 @@ class LoadAssets extends Phaser.Scene {
             {
                 player.flipX = true;
                 
-                player.setVelocityX(-50);
+                player.setVelocityX(-200);
 
                 player.anims.play('left', true);
             }
@@ -56,7 +88,7 @@ class LoadAssets extends Phaser.Scene {
             {
                 player.flipX = false;
                 
-                player.setVelocityX(50);
+                player.setVelocityX(200);
 
                 player.anims.play('right', true);
             }
@@ -67,28 +99,12 @@ class LoadAssets extends Phaser.Scene {
                 player.anims.play('stand');
             }
         
-            if (cursors.up.isDown && player.body.touching.down)
+            if (cursors.up.isDown && player.body.onFloor())
             {
                 player.setVelocityY(-200);
             }
         }
 }
-
-/*class InGame extends Phaser.Scene {
-
-    constructor() {
-        super("InGame");
-    }
-    preload() {
-        
-    }
-    create(data) {
-
-    }
-    update(delta,time) {
-
-    }
-}*/
 
 
 var config = {
@@ -104,8 +120,8 @@ var config = {
         },
     },
     scene: [
-        LoadAssets/*,
-        InGame*/        
+        LoadAssets,
+        InGame        
     ],
 };
 
