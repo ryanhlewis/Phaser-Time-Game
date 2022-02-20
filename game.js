@@ -46,12 +46,16 @@ class LoadAssets extends Phaser.Scene {
     update() {
             if (cursors.left.isDown)
             {
+                player.flipX = true;
+                
                 player.setVelocityX(-50);
 
                 player.anims.play('left', true);
             }
             else if (cursors.right.isDown)
             {
+                player.flipX = false;
+                
                 player.setVelocityX(50);
 
                 player.anims.play('right', true);
