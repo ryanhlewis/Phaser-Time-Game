@@ -12,10 +12,16 @@ class LoadAssets extends Phaser.Scene {
         super("LoadAssets");
     }
     preload() {
+        this.load.image('lab', 'assets/lab.png')
         this.load.spritesheet('player', 'assets/player.png', { frameWidth: 48, frameHeight: 48 })
     }
     create() {
+        var floor = this.physics.add.staticGroup();
+        floor.create(50, 640, 'lab');
+        
         player = this.physics.add.sprite(15, 250, 'player');
+        this.physics.add.collider(player, floor);
+        
         this.anims.create({
             key: 'stand',
             frames: [ { key: 'player', frame: 0 } ],
@@ -56,6 +62,11 @@ class LoadAssets extends Phaser.Scene {
 
                 player.anims.play('stand');
             }
+        
+            if (cursors.up.isDown && player.body.touching.down)
+            {
+                player.setVelocityY(-200);
+            }
         }
 }
 
@@ -84,7 +95,7 @@ var config = {
     physics: {
         default: "arcade",
         arcade: {
-            gravity: { y: 0 },
+            gravity: { y: 300 },
             debug: false
         },
     },
