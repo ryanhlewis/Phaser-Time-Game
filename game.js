@@ -6,8 +6,10 @@
 var player;
 var cursors;
 
+// This scene loads all game assets, and is never loaded again.
+// This is due to Phaser repeatedly calling preload() methods
+// for scene changes. So, everything is loaded once here.
 class LoadAssets extends Phaser.Scene {
-    // Load all assets for the first time, never again.
     constructor() {
         super("LoadAssets");
     }
@@ -21,111 +23,175 @@ class LoadAssets extends Phaser.Scene {
     }
 }
 
+// FUTURE- A class to handle Main Menu, and Level Selection.
+
+// This scene handles all In-Game activities, from displayin
+// the current map, backgrounds, handling player movement,
+// puzzle interactions, enemy spawns, and more. It has been
+// organized accordingly to simplify the scale.
 class InGame extends Phaser.Scene {
 
     constructor() {
         super("InGame");
     }
+
     preload() {
-        
+        cursors = this.input.keyboard.createCursorKeys();
     }
 
     create() {
+        // MAP SECTION
+        // Load the current map for the player. This map will be stored in an
+        // array, whereas the Player passes an index to select their current map.
         const map = this.make.tilemap({ key: "map", tileWidth: 16, tileHeight: 16});
         const tileset = map.addTilesetImage("Lab","tiles");
         const solidMap = map.createLayer("Solid", tileset, 0, 200);
         const backMap = map.createLayer("Background", tileset, 0, 200);
 
+        // MAP SCALES, PLAYER, CAMERA, AND REFERENCE
+        // DO NOT CHANGE.
         solidMap.setScale(3,3);
         backMap.setScale(3,3);
         
         player = this.physics.add.sprite(15, 250, 'player');
         player.body.offset.y = -10;
         player.y = 100;
-
         player.setScale(3,3);
-
-        solidMap.setCollisionByExclusion([-1]);
-        this.physics.add.collider(player, solidMap);
 
         this.cameras.main.startFollow(player);
         this.cameras.main.setDeadzone(100, 200);
 
+        // Reference, used for nested functions
+        var ref = this;
 
-        
-        this.anims.create({
-            key: 'stand',
-            frames: [ { key: 'player', frame: 0 } ],
-            frameRate: 10
-        });
+        // COLLISIONS
+        solidMap.setCollisionBetween(1, 999, true, 'Solid');
+        this.physics.add.collider(player,solidMap,onGround,null,this);
 
-        this.anims.create({
-            key: 'right',
-            frames: this.anims.generateFrameNumbers('player', { start: 6, end: 11 }),
-            frameRate: 10,
-            repeat: -1
-        });
-
-        this.anims.create({
-            key: 'left',
-            frames: this.anims.generateFrameNumbers('player', { start: 6, end: 11 }),
-            frameRate: 10,
-            repeat: -1
-        });
-
-        this.anims.create({
-            key: 'jump',
-            frames: this.anims.generateFrameNumbers('player', { start: 16, end: 17 }),
-            frameRate: 1,
-            repeat: -1
-        });
-
-        cursors = this.input.keyboard.createCursorKeys();
-    }
-    update() {
-            if (cursors.left.isDown)
-            {
-                player.flipX = true;
-                
-                player.setVelocityX(-200);
-
-                if(player.body.onFloor())
-                    player.anims.play('left', true);
-                else
-                    player.anims.play('jump', true);
-
-            }
-            else if (cursors.right.isDown)
-            {
-                player.flipX = false;
-                
-                player.setVelocityX(200);
-
-                if(player.body.onFloor())
-                    player.anims.play('right', true);
-                else
-                    player.anims.play('jump', true);
-
-            }
-            else
-            {
-                player.setVelocityX(0);
-
-                if(player.body.onFloor())
-                    player.anims.play('stand');
-                else
-                    player.anims.play('jump', true);
-
-            }
-        
-            if (cursors.up.isDown && player.body.onFloor())
-            {
-                player.setVelocityY(-200);
+        // ANIMATIONS
+        // To simplify this, we have created an addAnimation function,
+        // which takes a key, framerate, start frame, and end frame,
+        // as well as a spritesheet name to avoid multiple anims.create().
+        class Anim {
+            constructor(key,framerate,repeat,spritesheet,start,end) {
+                this.key = key;
+                this.framerate = framerate;
+                this.repeat = repeat;
+                this.spritesheet = spritesheet;
+                this.start = start;
+                this.end = end;
             }
         }
+
+        function addAnimation(anim) {
+            ref.anims.create({
+                key: anim.key,
+                frames: ref.anims.generateFrameNumbers(anim.spritesheet, { start: anim.start, end: anim.end }),
+                frameRate: anim.framerate,
+                repeat: anim.repeat
+            });
+        }
+
+        // ANIMATION ARRAY
+        // Add all animations here, under the following format:
+        // new Anim ( 'key' , framerate, repeat value, 'spritesheet', start frame, end frame )
+        var animations = [
+            new Anim('stand',10,-1,'player',0,0),
+            new Anim('walk',10,-1,'player',6,11),
+            new Anim('jump',1,-1,'player',16,17)
+        ];
+
+        animations.forEach(anim => {
+            addAnimation(anim)
+        });
+
+        // Create a start animation for our player.
+        player.anims.play("stand");
+
+
+        // INPUT EVENTS
+        // Create different inputs for the player.
+        // Controller support can be added here.
+        this.input.keyboard.on('keydown-LEFT', function (event) {
+            player.flipX = true;
+            player.setVelocityX(-200);
+            if(player.body.onFloor())
+            player.anims.play('walk');
+        });
+
+        this.input.keyboard.on('keydown-RIGHT', function (event) {
+            player.flipX = false;
+            player.setVelocityX(200);
+            if(player.body.onFloor())
+            player.anims.play('walk');
+        });
+
+        this.input.keyboard.on('keyup-RIGHT', function (event) {
+            // If the user isn't moving left-
+            if(!cursors.left.isDown) {
+                player.setVelocityX(0);
+                if(player.body.onFloor())
+                    player.anims.play('stand');
+            }
+        });
+
+        this.input.keyboard.on('keyup-LEFT', function (event) {
+            // If the user isn't moving right-
+            if(!cursors.right.isDown) {
+                player.setVelocityX(0);
+                if(player.body.onFloor())
+                    player.anims.play('stand');
+            }
+        });
+
+        this.input.keyboard.on('keydown-UP', function (event) {
+            if(player.body.onFloor()) {
+                player.setVelocityY(-200);
+                player.anims.play('jump', true);
+            }
+        });
+
+        var lastAnim = "stand";
+        // In a clever way, to avoid doing onFloor() in the Update() 
+        // function, we have instead designated Floors as separate
+        // layers in our levels, and trigger an OnCollide event.
+        function onGround() {
+            // Short circuit if player has not changed states
+            if(player.anims.currentAnim.key == lastAnim)
+                return;
+
+            if(cursors.right.isDown || cursors.left.isDown) {
+                console.log("playing walk anim")
+                if(player.anims.currentAnim.key != "walk") {
+                    player.anims.play('walk');
+                    lastAnim = "walk";
+                }
+            }
+            else {
+                console.log("playing stand anim")
+                if(player.anims.currentAnim.key != "stand") {
+                    player.anims.play('stand');
+                    lastAnim = "stand";
+                }
+            }
+        }
+
+    }
+
+    update() {
+        // All input events have been moved to INPUT EVENTS using Javascript Events
+        // Here, if we are smart enough, we don't have to put anything.
+        // Every single event should be a collision or a keypress.
+
+        // FUTURE - Enemy movement.
+        
+    }
+
 }
 
-
+// ACTUAL GAME START
+// The previous classes have defined the scenes,
+// and here, the game is actually loaded and started.
 var config = {
     type: Phaser.AUTO,
     width: 640,
