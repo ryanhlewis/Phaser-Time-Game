@@ -166,7 +166,7 @@ class InGame extends Phaser.Scene {
         // layers in our levels, and trigger an OnCollide event.
         function onGround() {
             // Short circuit if player has not changed states
-            if(player.anims.currentAnim.key == lastAnim)
+            if(player.anims.currentAnim.key == lastAnim || player.anims.currentAnim.key == "attack")
                 return;
 
             if(cursors.right.isDown || cursors.left.isDown) {
