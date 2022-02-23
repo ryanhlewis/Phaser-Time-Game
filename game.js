@@ -15,7 +15,7 @@ class LoadAssets extends Phaser.Scene {
     }
     preload() {
         this.load.spritesheet('player', 'assets/spritesheets/player.png', { frameWidth: 48, frameHeight: 48 })
-        this.load.image("tiles","assets/tilesets/lab.png");
+        this.load.image("tiles","assets/tilesets/lab/lab.png");
         this.load.tilemapTiledJSON('map',"assets/maps/tilemap.json");
     }
     create () {
@@ -98,7 +98,8 @@ class InGame extends Phaser.Scene {
         var animations = [
             new Anim('stand',10,-1,'player',0,0),
             new Anim('walk',10,-1,'player',6,11),
-            new Anim('jump',1,-1,'player',16,17)
+            new Anim('jump',1,-1,'player',16,17),
+            new Anim('attack',10,0,'player',12,15)
         ];
 
         animations.forEach(anim => {
@@ -150,14 +151,18 @@ class InGame extends Phaser.Scene {
                 player.anims.play('jump', true);
             }
         });
-
+        
+        this.input.keyboard.on('keydown-SPACE', function (event) {
+                player.anims.play('attack');
+        });
+        
         var lastAnim = "stand";
         // In a clever way, to avoid doing onFloor() in the Update() 
         // function, we have instead designated Floors as separate
         // layers in our levels, and trigger an OnCollide event.
         function onGround() {
             // Short circuit if player has not changed states
-            if(player.anims.currentAnim.key == lastAnim)
+            if(player.anims.currentAnim.key == lastAnim || player.anims.currentAnim.key == "attack")
                 return;
 
             if(cursors.right.isDown || cursors.left.isDown) {
