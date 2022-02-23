@@ -99,7 +99,7 @@ class InGame extends Phaser.Scene {
             new Anim('stand',10,-1,'player',0,0),
             new Anim('walk',10,-1,'player',6,11),
             new Anim('jump',1,-1,'player',16,17),
-            new Anim('attack',10,1,'player',12,15)
+            new Anim('attack',10,0,'player',12,15)
         ];
 
         animations.forEach(anim => {
@@ -156,10 +156,6 @@ class InGame extends Phaser.Scene {
                 player.anims.play('attack');
         });
         
-        this.input.keyboard.on('keyup-SPACE', function (event) {
-                player.anims.play('stand');
-        });
-
         var lastAnim = "stand";
         // In a clever way, to avoid doing onFloor() in the Update() 
         // function, we have instead designated Floors as separate
