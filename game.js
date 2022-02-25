@@ -5,7 +5,7 @@
 // Global Variables
 var player;
 var cursors;
-var showText;
+var vials;
 var scoreText;
 
 // This scene loads all game assets, and is never loaded again.
@@ -52,7 +52,7 @@ class InGame extends Phaser.Scene {
         const backMap = map.createLayer("Background", tileset, 0, 200);
         
         
-        var vials = this.physics.add.staticGroup();
+        vials = this.physics.add.staticGroup();
         vials.create(333, 435, 'vials').setScale(3,3);
 
         // MAP SCALES, PLAYER, CAMERA, AND REFERENCE
@@ -76,9 +76,9 @@ class InGame extends Phaser.Scene {
         this.physics.add.collider(player,solidMap,onGround,null,this);
         
         // Overlap
-        showText = this.physics.add.overlap(player, vials, puzzleSolved1, null, this);
+        //showText = this.physics.overlap(player, vials, puzzleSolved1, null, this);
         scoreText = this.add.text(0, 0, 'Press Enter to Interact', { fontSize: '32px', fill: '#FFFFFF' });
-        scoreText.setVisible(false);
+        //scoreText.setVisible(false);
 
         // ANIMATIONS
         // To simplify this, we have created an addAnimation function,
@@ -192,13 +192,6 @@ class InGame extends Phaser.Scene {
                 }
             }
         }
-        
-        function puzzleSolved1(){
-            //console.log(showText);
-            scoreText.setVisible(true);
-            scoreText.x = player.x - 200;
-            scoreText.y = player.y + 50;
-        }
     }
 
     update() {
@@ -209,8 +202,12 @@ class InGame extends Phaser.Scene {
         // FUTURE - Enemy movement.
         //console.log(showText);
         
-        if (!showText){
-            console.log('Worked');
+        if (this.physics.overlap(player, vials)){
+            scoreText.setVisible(true);
+            scoreText.x = player.x - 200;
+            scoreText.y = player.y + 50;
+        }
+        else{
             scoreText.setVisible(false);
         }
         
