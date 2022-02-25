@@ -5,6 +5,8 @@
 // Global Variables
 var player;
 var cursors;
+var showText;
+var scoreText;
 
 // This scene loads all game assets, and is never loaded again.
 // This is due to Phaser repeatedly calling preload() methods
@@ -15,6 +17,7 @@ class LoadAssets extends Phaser.Scene {
     }
     preload() {
         this.load.spritesheet('player', 'assets/spritesheets/player.png', { frameWidth: 48, frameHeight: 48 })
+        this.load.image('vials', 'assets/tilesets/lab/vials.png');
         this.load.image("tiles","assets/tilesets/lab/lab.png");
         this.load.tilemapTiledJSON('map',"assets/maps/tilemap.json");
     }
@@ -47,6 +50,10 @@ class InGame extends Phaser.Scene {
         const tileset = map.addTilesetImage("Lab","tiles");
         const solidMap = map.createLayer("Solid", tileset, 0, 200);
         const backMap = map.createLayer("Background", tileset, 0, 200);
+        
+        
+        var vials = this.physics.add.staticGroup();
+        vials.create(333, 435, 'vials').setScale(3,3);
 
         // MAP SCALES, PLAYER, CAMERA, AND REFERENCE
         // DO NOT CHANGE.
@@ -67,6 +74,11 @@ class InGame extends Phaser.Scene {
         // COLLISIONS
         solidMap.setCollisionBetween(1, 999, true, 'Solid');
         this.physics.add.collider(player,solidMap,onGround,null,this);
+        
+        // Overlap
+        showText = this.physics.add.overlap(player, vials, puzzleSolved1, null, this);
+        scoreText = this.add.text(0, 0, 'Press Enter to Interact', { fontSize: '32px', fill: '#FFFFFF' });
+        scoreText.setVisible(false);
 
         // ANIMATIONS
         // To simplify this, we have created an addAnimation function,
@@ -166,21 +178,27 @@ class InGame extends Phaser.Scene {
                 return;
 
             if(cursors.right.isDown || cursors.left.isDown) {
-                console.log("playing walk anim")
+                //console.log("playing walk anim")
                 if(player.anims.currentAnim.key != "walk") {
                     player.anims.play('walk');
                     lastAnim = "walk";
                 }
             }
             else {
-                console.log("playing stand anim")
+                //console.log("playing stand anim")
                 if(player.anims.currentAnim.key != "stand") {
                     player.anims.play('stand');
                     lastAnim = "stand";
                 }
             }
         }
-
+        
+        function puzzleSolved1(){
+            //console.log(showText);
+            scoreText.setVisible(true);
+            scoreText.x = player.x - 200;
+            scoreText.y = player.y + 50;
+        }
     }
 
     update() {
@@ -189,6 +207,12 @@ class InGame extends Phaser.Scene {
         // Every single event should be a collision or a keypress.
 
         // FUTURE - Enemy movement.
+        //console.log(showText);
+        
+        if (!showText){
+            console.log('Worked');
+            scoreText.setVisible(false);
+        }
         
     }
 
@@ -206,7 +230,7 @@ var config = {
         default: "arcade",
         arcade: {
             gravity: { y: 300 },
-            debug: false
+            debug: true
         },
     },
     scene: [
