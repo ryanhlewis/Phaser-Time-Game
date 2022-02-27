@@ -7,6 +7,8 @@ var player;
 var cursors;
 var vials;
 var scoreText;
+var vialsT;
+var panel;
 
 // This scene loads all game assets, and is never loaded again.
 // This is due to Phaser repeatedly calling preload() methods
@@ -18,6 +20,7 @@ class LoadAssets extends Phaser.Scene {
     preload() {
         this.load.spritesheet('player', 'assets/spritesheets/player.png', { frameWidth: 48, frameHeight: 48 })
         this.load.image('vials', 'assets/tilesets/lab/vials.png');
+        this.load.image('window', 'assets/icons/Card X2/Card X2.png');
         this.load.image("tiles","assets/tilesets/lab/lab.png");
         this.load.tilemapTiledJSON('map',"assets/maps/tilemap.json");
     }
@@ -64,6 +67,9 @@ class InGame extends Phaser.Scene {
         player.body.offset.y = -10;
         player.y = 100;
         player.setScale(3,3);
+        
+        panel = this.add.image(0, 0, 'window');
+        panel.setVisible(false);
 
         this.cameras.main.startFollow(player);
         this.cameras.main.setDeadzone(100, 200);
@@ -168,6 +174,19 @@ class InGame extends Phaser.Scene {
                 player.anims.play('attack');
         });
         
+        this.input.keyboard.on('keydown-ENTER', function (event) {
+            if(vialsT) {
+                scoreText.setVisible(false);
+                panel.setVisible(true);
+                panel.x = player.x;
+                panel.y = player.y;
+            }
+        });
+        
+        this.input.keyboard.on('keydown-ESC', function (event) {   
+            panel.setVisible(false);
+        });
+        
         var lastAnim = "stand";
         // In a clever way, to avoid doing onFloor() in the Update() 
         // function, we have instead designated Floors as separate
@@ -200,9 +219,8 @@ class InGame extends Phaser.Scene {
         // Every single event should be a collision or a keypress.
 
         // FUTURE - Enemy movement.
-        //console.log(showText);
-        
-        if (this.physics.overlap(player, vials)){
+        vialsT = this.physics.overlap(player, vials);
+        if (vialsT){
             scoreText.setVisible(true);
             scoreText.x = player.x - 200;
             scoreText.y = player.y + 50;
