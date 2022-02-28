@@ -5,12 +5,18 @@
 // Global Variables
 var player;
 var cursors;
+
+var vials;
+var scoreText;
+var vialsT;
+var panel;
 var playerSkin;
 
 // Character Color Picker (uses JQUERY)
 $("#colorChoice").change(function(){
    playerSkin.setTint("0x" + $(this).val().substring(1));
 });
+
 
 // This scene loads all game assets, and is never loaded again.
 // This is due to Phaser repeatedly calling preload() methods
@@ -22,6 +28,10 @@ class LoadAssets extends Phaser.Scene {
     preload() {
         // Player
         this.load.spritesheet('player', 'assets/spritesheets/player.png', { frameWidth: 48, frameHeight: 48 })
+        this.load.image('vials', 'assets/tilesets/lab/vials.png');
+        this.load.image('window', 'assets/icons/Card X2/Card X2.png');
+        this.load.image("tiles","assets/tilesets/lab/lab.png");
+        this.load.tilemapTiledJSON('map',"assets/maps/tilemap.json");
         this.load.spritesheet('skin', 'assets/spritesheets/skin.png', { frameWidth: 48, frameHeight: 48 })
         // Spritesheets
         this.load.image("lab-tiles","assets/tilesets/lab/lab.png");
@@ -110,6 +120,9 @@ class InGame extends Phaser.Scene {
         const solidMap = map.createLayer("Solid", tileset, 0, 200);
         const backMap = map.createLayer("Background", tileset, 0, 200);
         
+        
+        vials = this.physics.add.staticGroup();
+        vials.create(333, 435, 'vials').setScale(3,3);
 
         // MAP SCALES, PLAYER, CAMERA, AND REFERENCE
         // DO NOT CHANGE.
@@ -120,6 +133,9 @@ class InGame extends Phaser.Scene {
         player.body.offset.y = -10;
         player.y = 100;
         player.setScale(3,3);
+        
+        panel = this.add.image(0, 0, 'window');
+        panel.setVisible(false);
         playerSkin = this.physics.add.sprite(15, 250, 'skin');
         playerSkin.setScale(3,3);
         playerSkin.body.offset.y = -10;
@@ -136,6 +152,11 @@ class InGame extends Phaser.Scene {
         // COLLISIONS
         solidMap.setCollisionBetween(1, 999, true, 'Solid');
         this.physics.add.collider(player,solidMap,onGround,null,this);
+        
+        // Overlap
+        //showText = this.physics.overlap(player, vials, puzzleSolved1, null, this);
+        scoreText = this.add.text(0, 0, 'Press Enter to Interact', { fontSize: '32px', fill: '#FFFFFF' });
+        //scoreText.setVisible(false);
         this.physics.add.collider(playerSkin,solidMap,onGround,null,this);
 
         // ANIMATIONS
@@ -255,6 +276,19 @@ class InGame extends Phaser.Scene {
                 playerSkin.anims.play('attackSkin');
         });
         
+        this.input.keyboard.on('keydown-ENTER', function (event) {
+            if(vialsT) {
+                scoreText.setVisible(false);
+                panel.setVisible(true);
+                panel.x = player.x;
+                panel.y = player.y;
+            }
+        });
+        
+        this.input.keyboard.on('keydown-ESC', function (event) {   
+            panel.setVisible(false);
+        });
+        
         var lastAnim = "stand";
         // In a clever way, to avoid doing onFloor() in the Update() 
         // function, we have instead designated Floors as separate
@@ -265,7 +299,7 @@ class InGame extends Phaser.Scene {
                 return;
 
             if(cursors.right.isDown || cursors.left.isDown) {
-                console.log("playing walk anim")
+                //console.log("playing walk anim")
                 if(player.anims.currentAnim.key != "walk") {
                     player.anims.play('walk');
                     playerSkin.anims.play('walkSkin');
@@ -273,7 +307,7 @@ class InGame extends Phaser.Scene {
                 }
             }
             else {
-                console.log("playing stand anim")
+                //console.log("playing stand anim")
                 if(player.anims.currentAnim.key != "stand") {
                     player.anims.play('stand');
                     playerSkin.anims.play("standSkin");
@@ -281,7 +315,6 @@ class InGame extends Phaser.Scene {
                 }
             }
         }
-
     }
 
     update() {
@@ -305,6 +338,15 @@ class InGame extends Phaser.Scene {
 
 
         // FUTURE - Enemy movement.
+        vialsT = this.physics.overlap(player, vials);
+        if (vialsT){
+            scoreText.setVisible(true);
+            scoreText.x = player.x - 200;
+            scoreText.y = player.y + 50;
+        }
+        else{
+            scoreText.setVisible(false);
+        }
         
     }
 
@@ -322,7 +364,7 @@ var config = {
         default: "arcade",
         arcade: {
             gravity: { y: 300 },
-            debug: false
+            debug: true
         },
     },
     scene: [
