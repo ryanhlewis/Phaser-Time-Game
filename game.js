@@ -3,6 +3,7 @@
 // By Alyssa, Angela, and Ryan
 
 // Global Variables
+// TODO - Try to keep these to a minimum.
 var player;
 var cursors;
 
@@ -11,6 +12,9 @@ var scoreText;
 var vialsT;
 var panel;
 var playerSkin;
+var savedCameraPos;
+
+var currentMapNum = 0;
 
 // Character Color Picker (uses JQUERY)
 $("#colorChoice").change(function(){
@@ -35,12 +39,27 @@ class LoadAssets extends Phaser.Scene {
         this.load.spritesheet('skin', 'assets/spritesheets/skin.png', { frameWidth: 48, frameHeight: 48 })
         // Spritesheets
         this.load.image("lab-tiles","assets/tilesets/lab/lab.png");
+        this.load.image("forest-tiles","assets/tilesets/forest/Tiles/TilesNonSliced.png");
+        this.load.image("swamp-tiles","assets/tilesets/swamp/1 Tiles/Tileset.png");
+        this.load.image("industrial-tiles","assets/tilesets/lab/industrial zone/industrial.png");
         // Maps
         this.load.tilemapTiledJSON('lab-map',"assets/maps/tilemap.json");
+        this.load.tilemapTiledJSON('forest-map',"assets/maps/forest.json");
+        this.load.tilemapTiledJSON('swamp-map',"assets/maps/swamp.json");
+        this.load.tilemapTiledJSON('industrial-map',"assets/maps/industrial.json");
         // Backgrounds
         this.load.image('lab-back', 'assets/backgrounds/Scifi Lab/layers/back.png');
 		this.load.image('lab-middle', 'assets/backgrounds/Scifi Lab/layers/middle.png');
 		this.load.image('lab-front', 'assets/backgrounds/Scifi Lab/layers/front.png');
+        this.load.image('forest-back', 'assets/tilesets/forest/BG/2.png');
+		this.load.image('forest-middle', 'assets/tilesets/forest/BG/3.png');
+		this.load.image('forest-front', 'assets/tilesets/forest/BG/4.png');
+        this.load.image('swamp-back', 'assets/tilesets/space background/layers/1.png');
+		this.load.image('swamp-middle', 'assets/tilesets/space background/layers/2.png');
+		this.load.image('swamp-front', 'assets/tilesets/space background/layers/3.png');
+        this.load.image('industrial-back', 'assets/tilesets/lab/industrial zone/2 Background/2.png');
+		this.load.image('industrial-middle', 'assets/tilesets/lab/industrial zone/2 Background/3.png');
+		this.load.image('industrial-front', 'assets/tilesets/lab/industrial zone/2 Background/4.png');
     }
     create () {
         this.scene.start("InGame");
@@ -71,66 +90,76 @@ class InGame extends Phaser.Scene {
         // The naming system is consistently enforced-
         // mapname-tiles, mapname-back, etc.
         class Map {
-            constructor(name) {
+            constructor(name,offset1,offset2,offset3,scale) {
                 this.name = name;
                 this.back1 = name + "-back";
                 this.back2 = name  + "-middle";
                 this.back3 = name + "-front";
                 this.tilesetName = name + "-tiles";
                 this.mapName = name + "-map";
+                this.offset1 = offset1;
+                this.offset2 = offset2;
+                this.offset3 = offset3;
+                this.scale = scale;
             }
         }
         const mapArray = [
-            new Map("lab")
+            new Map("lab",350,500,300, 3),
+            new Map("forest",500,500,600, 4),
+            new Map("swamp",-20,200,700, 4),
+            new Map("industrial",400,600,600, 2.4)
         ]
-        var currentMap = mapArray[0];
+        var currentMap = mapArray[currentMapNum];
 
 
         // BACKGROUNDS
         this.cameras.main.setBackgroundColor('0x697e96');
 
         this.backgroundBack = this.add.tileSprite(0, 0, 640*2, 640*2, currentMap.back1);
-        this.backgroundBack.y += 350;
-        this.backgroundBack.tileScaleX = 3;
-        this.backgroundBack.tileScaleY = 3;
+        this.backgroundBack.y += currentMap.offset1;
+        this.backgroundBack.tileScaleX = currentMap.scale;
+        this.backgroundBack.tileScaleY = currentMap.scale;
         this.backgroundBack.scrollFactorX = 0;
-        this.backgroundBack.scrollFactorY = 0.3;
+        this.backgroundBack.scrollFactorY = 0.99;
 
 
         this.backgroundMiddle = this.add.tileSprite(0, 0, 640*2, 640*2, currentMap.back2);
-        this.backgroundMiddle.y += 500;
-        this.backgroundMiddle.tileScaleX = 3;
-        this.backgroundMiddle.tileScaleY = 3;
+        this.backgroundMiddle.y += currentMap.offset2;
+        this.backgroundMiddle.tileScaleX = currentMap.scale;
+        this.backgroundMiddle.tileScaleY = currentMap.scale;
         this.backgroundMiddle.scrollFactorX = 0;
-        this.backgroundMiddle.scrollFactorY = 0.3;
+        this.backgroundMiddle.scrollFactorY = 0.99;
 
 
         this.backgroundFront = this.add.tileSprite(0, 0, 640*2, 640*2, currentMap.back3);
-        this.backgroundFront.y += 300;
-        this.backgroundFront.tileScaleX = 3;
-        this.backgroundFront.tileScaleY = 3;
+        this.backgroundFront.y += currentMap.offset3;
+        this.backgroundFront.tileScaleX = currentMap.scale;
+        this.backgroundFront.tileScaleY = currentMap.scale;
         this.backgroundFront.scrollFactorX = 0;
-        this.backgroundFront.scrollFactorY = 0.1;
+        this.backgroundFront.scrollFactorY = 0.99;
 
 
         // MAP SECTION
         // Load the current map for the player.
-        const map = this.make.tilemap({ key: currentMap.mapName, tileWidth: 16, tileHeight: 16});
-        const tileset = map.addTilesetImage("Lab",currentMap.tilesetName);
-        const solidMap = map.createLayer("Solid", tileset, 0, 200);
+        const map = this.make.tilemap({ key: currentMap.mapName});
+        const tileset = map.addTilesetImage(currentMap.name,currentMap.tilesetName);
         const backMap = map.createLayer("Background", tileset, 0, 200);
+        const solidMap = map.createLayer("Solid", tileset, 0, 200);
         
         
         vials = this.physics.add.staticGroup();
-        vials.create(333, 435, 'vials').setScale(3,3);
+        var cabinet = vials.create(430, 465, 'vials').setScale(3,3);
+        // For testing purposes, set the sprite alpha to 0-
+        cabinet.alpha = 0;
 
         // MAP SCALES, PLAYER, CAMERA, AND REFERENCE
         // DO NOT CHANGE.
         solidMap.setScale(3,3);
         backMap.setScale(3,3);
+        solidMap.setSize(300,3);
         
         player = this.physics.add.sprite(15, 250, 'player');
-        player.body.offset.y = -10;
+        //player.body.offset.x = -20;
         player.y = 100;
         player.setScale(3,3);
         
@@ -138,8 +167,14 @@ class InGame extends Phaser.Scene {
         panel.setVisible(false);
         playerSkin = this.physics.add.sprite(15, 250, 'skin');
         playerSkin.setScale(3,3);
-        playerSkin.body.offset.y = -10;
+        //playerSkin.body.offset.x = -20;
         playerSkin.y = 100;
+        player.setSize(16,16);
+        playerSkin.setSize(16,16);
+        player.setOrigin(0.5,0.5);
+        player.body.offset.y = 22;
+        playerSkin.body.offset.y = 22;
+
 
 
 
@@ -151,6 +186,7 @@ class InGame extends Phaser.Scene {
 
         // COLLISIONS
         solidMap.setCollisionBetween(1, 999, true, 'Solid');
+        //solidMap.setCollisionByExclusion([-1]);
         this.physics.add.collider(player,solidMap,onGround,null,this);
         
         // Overlap
@@ -278,10 +314,14 @@ class InGame extends Phaser.Scene {
         
         this.input.keyboard.on('keydown-ENTER', function (event) {
             if(vialsT) {
+                // FUTURE - Pop up UI. Initial setup here.
                 scoreText.setVisible(false);
                 panel.setVisible(true);
                 panel.x = player.x;
                 panel.y = player.y;
+                // TESTING - Moving scenes using scene number interaction.
+                currentMapNum = (currentMapNum >= mapArray.length-1) ? 0 : currentMapNum+1;
+                ref.scene.start('InGame');
             }
         });
         
@@ -315,6 +355,9 @@ class InGame extends Phaser.Scene {
                 }
             }
         }
+
+        savedCameraPos = this.cameras.main.scrollX;
+
     }
 
     update() {
@@ -325,7 +368,7 @@ class InGame extends Phaser.Scene {
         // PARALLAX EFFECT
         // Unless we can figure out how to move this map on player movement-
         // it will have to be in the Update() method
-        if(player.anims.currentAnim.key == "walk" || player.anims.currentAnim.key == "jump")
+        if((player.anims.currentAnim.key == "walk" || player.anims.currentAnim.key == "jump") && savedCameraPos != this.cameras.main.scrollX) {
             if(player.flipX) {
                 this.backgroundBack.tilePositionX -= 0.05;
                 this.backgroundMiddle.tilePositionX -=  0.1;
@@ -335,6 +378,8 @@ class InGame extends Phaser.Scene {
                 this.backgroundMiddle.tilePositionX +=  0.1;
                 this.backgroundFront.tilePositionX +=  0.3;     
             }
+            savedCameraPos = this.cameras.main.scrollX;
+        }
 
 
         // FUTURE - Enemy movement.
