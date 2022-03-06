@@ -35,7 +35,7 @@ class LoadAssets extends Phaser.Scene {
         this.load.image('vials', 'assets/tilesets/lab/vials.png');
         this.load.image('window', 'assets/icons/Card X2/Card X2.png');
         this.load.image("tiles","assets/tilesets/lab/lab.png");
-        this.load.tilemapTiledJSON('map',"assets/maps/tilemap.json");
+        this.load.tilemapTiledJSON('map',"assets/level1.json");
         this.load.spritesheet('skin', 'assets/spritesheets/skin.png', { frameWidth: 48, frameHeight: 48 })
         // Spritesheets
         this.load.image("lab-tiles","assets/tilesets/lab/lab.png");
@@ -43,7 +43,7 @@ class LoadAssets extends Phaser.Scene {
         this.load.image("swamp-tiles","assets/tilesets/swamp/1 Tiles/Tileset.png");
         this.load.image("industrial-tiles","assets/tilesets/lab/industrial zone/industrial.png");
         // Maps
-        this.load.tilemapTiledJSON('lab-map',"assets/maps/tilemap.json");
+        this.load.tilemapTiledJSON('lab-map',"assets/level1.json");
         this.load.tilemapTiledJSON('forest-map',"assets/maps/forest.json");
         this.load.tilemapTiledJSON('swamp-map',"assets/maps/swamp.json");
         this.load.tilemapTiledJSON('industrial-map',"assets/maps/industrial.json");
@@ -60,6 +60,9 @@ class LoadAssets extends Phaser.Scene {
         this.load.image('industrial-back', 'assets/tilesets/lab/industrial zone/2 Background/2.png');
 		this.load.image('industrial-middle', 'assets/tilesets/lab/industrial zone/2 Background/3.png');
 		this.load.image('industrial-front', 'assets/tilesets/lab/industrial zone/2 Background/4.png');
+        this.load.image('industrial-front', 'assets/tilesets/lab/industrial zone/2 Background/4.png');
+        this.load.image('bulkhead-walls-back', 'assets/tilesets/lab/bulkhead-walls-back.png');
+        this.load.image('Background', 'assets/tilesets/lab/industrial zone/2 Background/Background.png');
     }
     create () {
         this.scene.start("InGame");
@@ -89,7 +92,7 @@ class InGame extends Phaser.Scene {
         // Map Structure and Map Array - ALL LOWERCASE.
         // The naming system is consistently enforced-
         // mapname-tiles, mapname-back, etc.
-        class Map {
+        /*class Map {
             constructor(name,offset1,offset2,offset3,scale) {
                 this.name = name;
                 this.back1 = name + "-back";
@@ -156,7 +159,13 @@ class InGame extends Phaser.Scene {
         // DO NOT CHANGE.
         solidMap.setScale(3,3);
         backMap.setScale(3,3);
-        solidMap.setSize(300,3);
+        solidMap.setSize(300,3);*/
+        
+        const map = this.make.tilemap({ key: 'lab-map'});
+        const tileset = map.addTilesetImage('lab', 'lab-tiles');
+        //const backMap = map.createLayer("Background", tileset, 0, 200);
+        //const solidMap = map.createLayer("Solid", tileset, 0, 200);
+        const platforms = map.createStaticLayer('platforms', tileset, 0, 200);
         
         player = this.physics.add.sprite(15, 250, 'player');
         //player.body.offset.x = -20;
@@ -165,7 +174,7 @@ class InGame extends Phaser.Scene {
         
         panel = this.add.image(0, 0, 'window');
         panel.setVisible(false);
-        playerSkin = this.physics.add.sprite(15, 250, 'skin');
+        playerSkin = this.physics.add.sprite(0, 200, 'skin');
         playerSkin.setScale(3,3);
         //playerSkin.body.offset.x = -20;
         playerSkin.y = 100;
