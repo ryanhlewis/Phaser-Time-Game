@@ -47,6 +47,8 @@ class LoadAssets extends Phaser.Scene {
         this.load.image('window', 'assets/icons/Card X2/Card X2.png');
         this.load.image("tiles","assets/tilesets/lab/lab.png");
         this.load.image("door","assets/tilesets/lab/door.png");
+        this.load.image("button-up","assets/tilesets/lab/button.png");
+        this.load.image("button-down","assets/tilesets/lab/buttondown.png");
         this.load.tilemapTiledJSON('map',"assets/maps/tilemap.json");
         this.load.spritesheet('skin', 'assets/spritesheets/skin.png', { frameWidth: 48, frameHeight: 48 })
         // Spritesheets
@@ -357,7 +359,7 @@ class InGame extends Phaser.Scene {
         var usedDoor = false;
         // Each door is mapped to the next door down and up.
         function doorOpen(player,door) {
-            console.log(door);
+            //console.log(door);
             if(EnterKey.isDown && !usedDoor) {
                 usedDoor = true;
                 player.x = door.getData('teleport')[0];
@@ -380,6 +382,70 @@ class InGame extends Phaser.Scene {
         );
         }
             
+
+        //BUTTON EVENT
+        this.buttons = this.physics.add.staticGroup();
+        var buttonArray = map.getObjectLayer('Buttons').objects;
+        for(var i = 0; i < buttonArray.length; i++) {
+            //console.log(buttonArray[0]);
+            var buttonObject = this.buttons.create(buttonArray[i].x*3, buttonArray[i].y*3 + 200 - buttonArray[i].height, 'button-up').setScale(3,3);
+            buttonObject.setSize(50,50);
+            buttonObject.setData('order', buttonArray[i].properties[0].value);
+            buttonObject.setData('isDown', false);
+            //console.log(buttonObject);
+        }
+        this.physics.add.collider(player, this.buttons,buttonPress,null,this);
+        this.physics.add.collider(playerSkin, this.buttons);
+        // Each door is mapped to the next door down and up.
+        function buttonPress(player,button) {
+            //console.log(button);
+            if(player.body.touching.down && button.body.touching.up) {
+                button.setSize(50,25);
+                button.setTexture('button-down');
+                //console.log("on botton");
+                // Timed button up!
+                if(!button.getData('isDown')) {
+                    // Check if other buttons are pressed in correct order
+                    //console.log(this.buttons);
+                    var currentOrder = button.getData('order');
+                    for(var i = 0; i < this.buttons.children.entries.length; i++) {
+                        var compareButton = this.buttons.children.entries[i];
+                        //console.log(compareButton);
+                        if(compareButton.getData('order') > currentOrder && compareButton.getData('isDown')) {
+                            console.log("reset");
+                            resetAllButtons();
+                        } else {
+                            console.log("You clicked the right button.");
+                        }
+                    }
+                    button.setData('isDown', true);
+                    //buttonReset(button);
+                }
+            }
+        }
+        function resetAllButtons() {
+            for(var i = 0; i < ref.buttons.children.entries.length; i++) {
+                var compareButton = ref.buttons.children.entries[i];
+                buttonReset(compareButton);
+            }
+        }
+        async function buttonReset(button) {
+            await new Promise((r) =>
+            setTimeout(
+                () =>
+                    new (function () {
+                        button.setSize(50,50);
+                        button.setData('isDown', false);
+                        button.setTexture('button-up');
+                        if(ref.physics.overlap(player, button)) {
+                            player.setVelocityY(-200);
+                        } 
+                    })(),
+                1000
+            )
+        );
+        }
+
         
         
 
