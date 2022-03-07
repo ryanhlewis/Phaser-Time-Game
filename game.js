@@ -159,20 +159,20 @@ class InGame extends Phaser.Scene {
         this.doors = this.physics.add.staticGroup();
         var doorArray = map.getObjectLayer('Doors').objects;
         for(var i = 0; i < doorArray.length; i++) {
-            var doorObject = this.doors.create(doorArray[i].x*3, doorArray[i].y*3 + 200 - doorArray[i].height, 'door').setScale(3,3);
+            var doorObject = this.doors.create(doorArray[i].x*3, doorArray[i].y*3 + 155 - doorArray[i].height, 'door').setScale(3,3);
             // Attach door link
             if(i % 2 == 0 && i != doorArray.length-1) {
-                doorObject.setData('teleport', [doorArray[i+1].x*3,doorArray[i+1].y*3 + 200]  );
+                doorObject.setData('teleport', [doorArray[i+1].x*3,doorArray[i+1].y*3 + 155]  );
             } else {
-                doorObject.setData('teleport', [doorArray[i-1].x*3,doorArray[i-1].y*3 + 200]  );
+                doorObject.setData('teleport', [doorArray[i-1].x*3,doorArray[i-1].y*3 + 155]  );
             }
         }
         
         
-        vials = this.physics.add.staticGroup();
-        var cabinet = vials.create(430, 1065, 'vials').setScale(3,3);
+        //vials = this.physics.add.staticGroup();
+        //var cabinet = vials.create(430, 1065, 'vials').setScale(3,3);
         // For testing purposes, set the sprite alpha to 0-
-        cabinet.alpha = 0;
+        //cabinet.alpha = 0;
 
         // MAP SCALES, PLAYER, CAMERA, AND REFERENCE
         // DO NOT CHANGE.
@@ -180,17 +180,22 @@ class InGame extends Phaser.Scene {
         backMap.setScale(3,3);
         solidMap.setSize(300,3);
         
-        player = this.physics.add.sprite(15, 250, 'player');
+        //Text
+        this.add.text(345, 875, 'Use the right and\nleft arrow keys\nto move.\n\nUse the up arrow\nkey to jump.', { fontSize: '32px', fill: '#FFFFFF' });
+        this.add.text(1135, 975, 'To Interact', { fontSize: '32px', fill: '#FFFFFF' });
+        this.add.text(3850, 2400, 'Press Space to attack.', { fontSize: '32px', fill: '#FFFFFF' });
+        
+        player = this.physics.add.sprite(400, 900, 'player');
         //player.body.offset.x = -20;
-        player.y = 100;
+        //player.y = 100;
         player.setScale(3,3);
         
         panel = this.add.image(0, 0, 'window');
         panel.setVisible(false);
-        playerSkin = this.physics.add.sprite(15, 250, 'skin');
+        playerSkin = this.physics.add.sprite(400, 900, 'skin');
         playerSkin.setScale(3,3);
         //playerSkin.body.offset.x = -20;
-        playerSkin.y = 100;
+        //playerSkin.y = 100;
         player.setSize(16,16);
         playerSkin.setSize(16,16);
         player.setOrigin(0.5,0.5);
@@ -243,9 +248,8 @@ class InGame extends Phaser.Scene {
         this.physics.add.collider(player,solidMap,onGround,null,this);
         
         // Overlap
-        //showText = this.physics.overlap(player, vials, puzzleSolved1, null, this);
-        scoreText = this.add.text(0, 0, 'Press Enter to Interact', { fontSize: '32px', fill: '#FFFFFF' });
-        //scoreText.setVisible(false);
+        scoreText = this.add.text(0, 0, 'Press Enter', { fontSize: '32px', fill: '#FFFFFF' });
+        scoreText.setVisible(false);
         this.physics.add.collider(playerSkin,solidMap,onGround,null,this);
 
         // ANIMATIONS
@@ -374,7 +378,7 @@ class InGame extends Phaser.Scene {
                 panel.y = player.y;
                 // TESTING - Moving scenes using scene number interaction.
                 currentMapNum = (currentMapNum >= mapArray.length-1) ? 0 : currentMapNum+1;
-                ref.scene.start('InGame');
+                //ref.scene.start('InGame');
             }
         });
         
@@ -436,10 +440,10 @@ class InGame extends Phaser.Scene {
 
 
         // FUTURE - Enemy movement.
-        vialsT = this.physics.overlap(player, vials);
+        vialsT = this.physics.overlap(player, this.doors);
         if (vialsT){
             scoreText.setVisible(true);
-            scoreText.x = player.x - 200;
+            scoreText.x = player.x - 100;
             scoreText.y = player.y + 50;
         }
         else{
@@ -456,7 +460,7 @@ class InGame extends Phaser.Scene {
 var config = {
     type: Phaser.AUTO,
     width: 640,
-    height: 640,
+    height: 570,
     pixelArt: true,
     physics: {
         default: "arcade",
