@@ -4,6 +4,13 @@
 
 // Global Variables
 // TODO - Try to keep these to a minimum.
+
+
+
+
+
+
+
 var player;
 var cursors;
 
@@ -13,6 +20,10 @@ var vialsT;
 var panel;
 var playerSkin;
 var savedCameraPos;
+var enemy;
+var numOfEnemies = 10;       
+var enemies;
+var health = 100;
 
 var currentMapNum = 0;
 
@@ -60,11 +71,18 @@ class LoadAssets extends Phaser.Scene {
         this.load.image('industrial-back', 'assets/tilesets/lab/industrial zone/2 Background/2.png');
 		this.load.image('industrial-middle', 'assets/tilesets/lab/industrial zone/2 Background/3.png');
 		this.load.image('industrial-front', 'assets/tilesets/lab/industrial zone/2 Background/4.png');
+        this.load.spritesheet('pumpkin-dude', 'assets/spritesheets/pumpkin spritesheet.png',{frameWidth:18, frameHeight: 34})
     }
     create () {
         this.scene.start("InGame");
     }
 }
+
+
+
+
+
+
 
 // FUTURE- A class to handle Main Menu, and Level Selection.
 
@@ -81,6 +99,9 @@ class InGame extends Phaser.Scene {
     preload() {
         cursors = this.input.keyboard.createCursorKeys();
     }
+    
+    
+    
 
     create() {
 
@@ -175,8 +196,146 @@ class InGame extends Phaser.Scene {
         player.body.offset.y = 22;
         playerSkin.body.offset.y = 22;
 
+        
+        
+        
+        
+        
+        
+        
+        async function enemyrun(pumpkin){ 
+                  
+            pumpkin.body.collideWorldBounds = true;           
+            pumpkin.body.velocity.x = Math.random()*1.5+100;       pumpkin.body.velocity.y = Math.random()*5;
+            
+            await new Promise((r) =>
+            setTimeout(
+                () =>
+                    new (function () {
+                        enemyleftrun(pumpkin)
 
+                    })(),
+                (Math.random()*2000+1000)
+            ))
 
+        }    
+        
+        async function enemyleftrun(pumpkin){
+            pumpkin.flipX = true;
+                pumpkin.body.velocity.x = Math.random()*(-1.5)-100;       
+                pumpkin.body.velocity.y = Math.random()*5;
+                console.log(pumpkin.body.velocity.x)
+                
+                await new Promise((r) =>
+                    setTimeout(
+                    () =>
+                    new (function () {
+                    pumpkin.flipX = false
+                    enemyrun(pumpkin)
+                        })(),
+                (Math.random()*2000+1000)
+                    ))
+            
+            }
+    
+        
+        enemy = this.physics.add.sprite(Phaser.Math.Between(10, 100), 250, 'pumpkin-dude');
+        enemy.setScale(3,3);
+        enemy.setOrigin(0.5,0.5);
+        enemyrun(enemy);
+        
+        enemy.setSize(16,16);
+        enemy.body.offset.y = 15;
+        
+        enemy.setPushable(false);
+        
+        
+        player.setData('isHit', Boolean(0));
+        
+
+        
+        
+        
+        this.physics.add.collider(enemy, solidMap);
+        this.physics.add.collider(enemy, player, hitplayer, null, this);
+        this.physics.add.collider(enemy, playerSkin);
+        
+        
+        
+        //display health
+        var txt = this.add.text(0, 0, 'hello');
+        txt.setScrollFactor(0);
+        
+        
+        async function hitplayer(pumpkin, player){
+    
+            if (player.getData('isHit'))
+                return;
+                
+            health-=10;
+            
+            txt.text = health;
+            
+            player.setData('isHit', Boolean(1));
+
+            player.setVelocityX((pumpkin.x-player.x)*5);
+            player.setVelocityY(-100);
+            
+            
+            player.tint = 0xff0000;
+            
+            await new Promise((r) =>
+            setTimeout(
+                () =>
+                    new (function () {
+                        player.tint = 0xffffff;
+                        player.setData('isHit', Boolean(0));
+
+                    })(),
+                500
+            ))
+            
+    
+            
+            
+            
+            
+        }
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+
+        this.anims.create({
+            key: 'left',
+            frames: this.anims.generateFrameNumbers('pumpkin-dude', { start: 0, end: 7}),
+            frameRate: 10,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'turn',
+            frames: [ { key: 'pumpkin-dude', frame: 4 } ],
+            frameRate: 20
+        });
+
+        this.anims.create({
+            key: 'right',
+            frames: this.anims.generateFrameNumbers('pumpkin-dude', { start: 5, end: 7 }),
+            frameRate: 10,
+            repeat: -1
+        });
+        
+        
+        
+        
 
         this.cameras.main.startFollow(player);
         this.cameras.main.setDeadzone(100, 200);
@@ -218,6 +377,13 @@ class InGame extends Phaser.Scene {
                 repeat: anim.repeat
             });
         }
+        
+        
+
+        
+        
+        
+        
 
         // ANIMATION ARRAY
         // Add all animations here, under the following format:
@@ -230,16 +396,21 @@ class InGame extends Phaser.Scene {
             new Anim('standSkin',1,-1,'skin',0,0),
             new Anim('walkSkin',10,-1,'skin',6,11),
             new Anim('jumpSkin',1,-1,'skin',16,17),
-            new Anim('attackSkin',10,0,'skin',12,15)
+            new Anim('attackSkin',10,0,'skin',12,15),
+            new Anim('enemywalk',10,-1,'pumpkin-dude',0,7)
         ];
 
-        animations.forEach(anim => {
+        animations.forEach(anim => { 
             addAnimation(anim)
         });
 
         // Create a start animation for our player.
         player.anims.play("stand");
         playerSkin.anims.play("standSkin");
+        
+        
+        enemy.anims.play("enemywalk");
+
 
         // INPUT EVENTS
         // Create different inputs for the player.
@@ -308,9 +479,24 @@ class InGame extends Phaser.Scene {
         });
         
         this.input.keyboard.on('keydown-SPACE', function (event) {
+                player.setSize(32, 16);
+                playerSkin.setSize(32, 16);
+                player.body.offset.y = 22;
+                playerSkin.body.offset.y = 22;
                 player.anims.play('attack');
                 playerSkin.anims.play('attackSkin');
-        });
+
+        }); 
+        this.input.keyboard.on('keyup-SPACE', function (event) {
+                player.setSize(16, 16);
+                playerSkin.setSize(16, 16);
+                player.body.offset.y = 22;
+                playerSkin.body.offset.y=22;
+            
+                }
+        );
+        
+                
         
         this.input.keyboard.on('keydown-ENTER', function (event) {
             if(vialsT) {
@@ -382,6 +568,12 @@ class InGame extends Phaser.Scene {
         }
 
 
+        
+        
+        
+        
+        
+
         // FUTURE - Enemy movement.
         vialsT = this.physics.overlap(player, vials);
         if (vialsT){
@@ -393,9 +585,10 @@ class InGame extends Phaser.Scene {
             scoreText.setVisible(false);
         }
         
-    }
-
-}
+        
+        
+        
+    }}
 
 // ACTUAL GAME START
 // The previous classes have defined the scenes,
@@ -419,3 +612,9 @@ var config = {
 };
 
 var game = new Phaser.Game(config);
+
+
+
+
+
+    
