@@ -1,12 +1,4 @@
 { "compressionlevel":-1,
- "editorsettings":
-    {
-     "export":
-        {
-         "format":"json",
-         "target":"..\/..\/..\/Documents\/GitHub\/Phaser-Time-Game\/assets\/maps\/level1.json"
-        }
-    },
  "height":50,
  "infinite":false,
  "layers":[
@@ -68,7 +60,7 @@
         {
          "columns":56,
          "firstgid":1,
-         "image":"tilesets\/custom\/level1.png",
+         "image":"..\/tilesets\/custom\/level1.png",
          "imageheight":548,
          "imagewidth":896,
          "margin":0,
