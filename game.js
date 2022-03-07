@@ -46,6 +46,7 @@ class LoadAssets extends Phaser.Scene {
         this.load.image('vials', 'assets/tilesets/lab/vials.png');
         this.load.image('window', 'assets/icons/Card X2/Card X2.png');
         this.load.image("tiles","assets/tilesets/lab/lab.png");
+        this.load.image("door","assets/tilesets/lab/door.png");
         this.load.tilemapTiledJSON('map',"assets/maps/tilemap.json");
         this.load.spritesheet('skin', 'assets/spritesheets/skin.png', { frameWidth: 48, frameHeight: 48 })
         // Spritesheets
@@ -53,11 +54,15 @@ class LoadAssets extends Phaser.Scene {
         this.load.image("forest-tiles","assets/tilesets/forest/Tiles/TilesNonSliced.png");
         this.load.image("swamp-tiles","assets/tilesets/swamp/1 Tiles/Tileset.png");
         this.load.image("industrial-tiles","assets/tilesets/lab/industrial zone/industrial.png");
+        this.load.image("level1-tiles","assets/tilesets/custom/level1.png");
+
         // Maps
         this.load.tilemapTiledJSON('lab-map',"assets/maps/tilemap.json");
         this.load.tilemapTiledJSON('forest-map',"assets/maps/forest.json");
         this.load.tilemapTiledJSON('swamp-map',"assets/maps/swamp.json");
         this.load.tilemapTiledJSON('industrial-map',"assets/maps/industrial.json");
+        this.load.tilemapTiledJSON('level1-map',"assets/maps/level1.json");
+
         // Backgrounds
         this.load.image('lab-back', 'assets/backgrounds/Scifi Lab/layers/back.png');
 		this.load.image('lab-middle', 'assets/backgrounds/Scifi Lab/layers/middle.png');
@@ -72,6 +77,10 @@ class LoadAssets extends Phaser.Scene {
 		this.load.image('industrial-middle', 'assets/tilesets/lab/industrial zone/2 Background/3.png');
 		this.load.image('industrial-front', 'assets/tilesets/lab/industrial zone/2 Background/4.png');
         this.load.spritesheet('pumpkin-dude', 'assets/spritesheets/pumpkin spritesheet.png',{frameWidth:18, frameHeight: 34})
+        this.load.image('level1-back', 'assets/tilesets/lab/industrial zone/2 Background/2.png');
+		this.load.image('level1-middle', 'assets/tilesets/lab/industrial zone/2 Background/3.png');
+		this.load.image('level1-front', 'assets/tilesets/lab/industrial zone/2 Background/4.png');
+   
     }
     create () {
         this.scene.start("InGame");
@@ -128,9 +137,10 @@ class InGame extends Phaser.Scene {
             new Map("lab",350,500,300, 3),
             new Map("forest",500,500,600, 4),
             new Map("swamp",-20,200,700, 4),
-            new Map("industrial",400,600,600, 2.4)
+            new Map("industrial",400,600,600, 2.4),
+            new Map("level1",400,600,600, 2.4)
         ]
-        var currentMap = mapArray[currentMapNum];
+        var currentMap = mapArray[4];
 
 
         // BACKGROUNDS
@@ -167,11 +177,23 @@ class InGame extends Phaser.Scene {
         const backMap = map.createLayer("Background", tileset, 0, 200);
         const solidMap = map.createLayer("Solid", tileset, 0, 200);
         
+        this.doors = this.physics.add.staticGroup();
+        var doorArray = map.getObjectLayer('Doors').objects;
+        for(var i = 0; i < doorArray.length; i++) {
+            var doorObject = this.doors.create(doorArray[i].x*3, doorArray[i].y*3 + 155 - doorArray[i].height, 'door').setScale(3,3);
+            // Attach door link
+            if(i % 2 == 0 && i != doorArray.length-1) {
+                doorObject.setData('teleport', [doorArray[i+1].x*3,doorArray[i+1].y*3 + 155]  );
+            } else {
+                doorObject.setData('teleport', [doorArray[i-1].x*3,doorArray[i-1].y*3 + 155]  );
+            }
+        }
         
-        vials = this.physics.add.staticGroup();
-        var cabinet = vials.create(430, 465, 'vials').setScale(3,3);
+        
+        //vials = this.physics.add.staticGroup();
+        //var cabinet = vials.create(430, 1065, 'vials').setScale(3,3);
         // For testing purposes, set the sprite alpha to 0-
-        cabinet.alpha = 0;
+        //cabinet.alpha = 0;
 
         // MAP SCALES, PLAYER, CAMERA, AND REFERENCE
         // DO NOT CHANGE.
@@ -179,17 +201,22 @@ class InGame extends Phaser.Scene {
         backMap.setScale(3,3);
         solidMap.setSize(300,3);
         
-        player = this.physics.add.sprite(15, 250, 'player');
+        //Text
+        this.add.text(345, 875, 'Use the right and\nleft arrow keys\nto move.\n\nUse the up arrow\nkey to jump.', { fontSize: '32px', fill: '#FFFFFF' });
+        this.add.text(1135, 975, 'To Interact', { fontSize: '32px', fill: '#FFFFFF' });
+        this.add.text(3850, 2400, 'Press Space to attack.', { fontSize: '32px', fill: '#FFFFFF' });
+        
+        player = this.physics.add.sprite(400, 900, 'player');
         //player.body.offset.x = -20;
-        player.y = 100;
+        //player.y = 100;
         player.setScale(3,3);
         
         panel = this.add.image(0, 0, 'window');
         panel.setVisible(false);
-        playerSkin = this.physics.add.sprite(15, 250, 'skin');
+        playerSkin = this.physics.add.sprite(400, 900, 'skin');
         playerSkin.setScale(3,3);
         //playerSkin.body.offset.x = -20;
-        playerSkin.y = 100;
+        //playerSkin.y = 100;
         player.setSize(16,16);
         playerSkin.setSize(16,16);
         player.setOrigin(0.5,0.5);
@@ -251,9 +278,7 @@ class InGame extends Phaser.Scene {
         
         
         player.setData('isHit', Boolean(0));
-        
-
-        
+                
         
         
         this.physics.add.collider(enemy, solidMap);
@@ -290,26 +315,44 @@ class InGame extends Phaser.Scene {
                     new (function () {
                         player.tint = 0xffffff;
                         player.setData('isHit', Boolean(0));
+                    })(),
+                    500
+                )
+            );
+            }
 
+        // Player collider has been created- put all collisions here.
+
+        this.physics.add.overlap(player, this.doors,doorOpen,null,this);
+
+        var EnterKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER);
+
+        var usedDoor = false;
+        // Each door is mapped to the next door down and up.
+        function doorOpen(player,door) {
+            console.log(door);
+            if(EnterKey.isDown && !usedDoor) {
+                usedDoor = true;
+                player.x = door.getData('teleport')[0];
+                player.y = door.getData('teleport')[1];
+                playerSkin.x = door.getData('teleport')[0];
+                playerSkin.y = door.getData('teleport')[1];
+                this.cameras.main.startFollow(player);
+                doorReset();
+            }
+        }
+        async function doorReset() {
+            await new Promise((r) =>
+            setTimeout(
+                () =>
+                    new (function () {
+                        usedDoor = false;
                     })(),
                 500
-            ))
-            
-    
-            
-            
-            
-            
+            )
+        );
         }
-        
-        
-        
-        
-        
-        
-        
-        
-        
+            
         
         
 
@@ -344,14 +387,13 @@ class InGame extends Phaser.Scene {
         var ref = this;
 
         // COLLISIONS
-        solidMap.setCollisionBetween(1, 999, true, 'Solid');
-        //solidMap.setCollisionByExclusion([-1]);
+        //solidMap.setCollisionBetween(1, 999, true, 'Solid');
+        solidMap.setCollisionByExclusion([-1]);
         this.physics.add.collider(player,solidMap,onGround,null,this);
         
         // Overlap
-        //showText = this.physics.overlap(player, vials, puzzleSolved1, null, this);
-        scoreText = this.add.text(0, 0, 'Press Enter to Interact', { fontSize: '32px', fill: '#FFFFFF' });
-        //scoreText.setVisible(false);
+        scoreText = this.add.text(0, 0, 'Press Enter', { fontSize: '32px', fill: '#FFFFFF' });
+        scoreText.setVisible(false);
         this.physics.add.collider(playerSkin,solidMap,onGround,null,this);
 
         // ANIMATIONS
@@ -507,7 +549,7 @@ class InGame extends Phaser.Scene {
                 panel.y = player.y;
                 // TESTING - Moving scenes using scene number interaction.
                 currentMapNum = (currentMapNum >= mapArray.length-1) ? 0 : currentMapNum+1;
-                ref.scene.start('InGame');
+                //ref.scene.start('InGame');
             }
         });
         
@@ -575,10 +617,10 @@ class InGame extends Phaser.Scene {
         
 
         // FUTURE - Enemy movement.
-        vialsT = this.physics.overlap(player, vials);
+        vialsT = this.physics.overlap(player, this.doors);
         if (vialsT){
             scoreText.setVisible(true);
-            scoreText.x = player.x - 200;
+            scoreText.x = player.x - 100;
             scoreText.y = player.y + 50;
         }
         else{
@@ -596,7 +638,7 @@ class InGame extends Phaser.Scene {
 var config = {
     type: Phaser.AUTO,
     width: 640,
-    height: 640,
+    height: 570,
     pixelArt: true,
     physics: {
         default: "arcade",
