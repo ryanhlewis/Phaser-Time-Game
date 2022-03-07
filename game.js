@@ -35,6 +35,7 @@ class LoadAssets extends Phaser.Scene {
         this.load.image('vials', 'assets/tilesets/lab/vials.png');
         this.load.image('window', 'assets/icons/Card X2/Card X2.png');
         this.load.image("tiles","assets/tilesets/lab/lab.png");
+        this.load.image("door","assets/tilesets/lab/door.png");
         this.load.tilemapTiledJSON('map',"assets/maps/tilemap.json");
         this.load.spritesheet('skin', 'assets/spritesheets/skin.png', { frameWidth: 48, frameHeight: 48 })
         // Spritesheets
@@ -155,9 +156,21 @@ class InGame extends Phaser.Scene {
         const backMap = map.createLayer("Background", tileset, 0, 200);
         const solidMap = map.createLayer("Solid", tileset, 0, 200);
         
+        this.doors = this.physics.add.staticGroup();
+        var doorArray = map.getObjectLayer('Doors').objects;
+        for(var i = 0; i < doorArray.length; i++) {
+            var doorObject = this.doors.create(doorArray[i].x*3, doorArray[i].y*3 + 200 - doorArray[i].height, 'door').setScale(3,3);
+            // Attach door link
+            if(i % 2 == 0 && i != doorArray.length-1) {
+                doorObject.setData('teleport', [doorArray[i+1].x*3,doorArray[i+1].y*3 + 200]  );
+            } else {
+                doorObject.setData('teleport', [doorArray[i-1].x*3,doorArray[i-1].y*3 + 200]  );
+            }
+        }
+        
         
         vials = this.physics.add.staticGroup();
-        var cabinet = vials.create(430, 465, 'vials').setScale(3,3);
+        var cabinet = vials.create(430, 1065, 'vials').setScale(3,3);
         // For testing purposes, set the sprite alpha to 0-
         cabinet.alpha = 0;
 
@@ -185,6 +198,37 @@ class InGame extends Phaser.Scene {
         playerSkin.body.offset.y = 22;
 
 
+        // Player collider has been created- put all collisions here.
+
+        this.physics.add.overlap(player, this.doors,doorOpen,null,this);
+
+        var EnterKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER);
+
+        var usedDoor = false;
+        // Each door is mapped to the next door down and up.
+        function doorOpen(player,door) {
+            console.log(door);
+            if(EnterKey.isDown && !usedDoor) {
+                usedDoor = true;
+                player.x = door.getData('teleport')[0];
+                player.y = door.getData('teleport')[1];
+                playerSkin.x = door.getData('teleport')[0];
+                playerSkin.y = door.getData('teleport')[1];
+                this.cameras.main.startFollow(player);
+                doorReset();
+            }
+        }
+        async function doorReset() {
+            await new Promise((r) =>
+            setTimeout(
+                () =>
+                    new (function () {
+                        usedDoor = false;
+                    })(),
+                500
+            )
+        );
+        }
 
 
         this.cameras.main.startFollow(player);
