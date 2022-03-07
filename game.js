@@ -206,7 +206,12 @@ class InGame extends Phaser.Scene {
         this.add.text(1135, 975, 'To Interact', { fontSize: '32px', fill: '#FFFFFF' });
         this.add.text(3850, 2400, 'Press Space to attack.', { fontSize: '32px', fill: '#FFFFFF' });
         
-        player = this.physics.add.sprite(400, 900, 'player');
+        this.player = this.physics.add.group();
+
+        player = this.player.create(400, 900, 'player');
+
+
+//        player = this.physics.add.sprite(400, 900, 'player');
         //player.body.offset.x = -20;
         //player.y = 100;
         player.setScale(3,3);
@@ -227,19 +232,17 @@ class InGame extends Phaser.Scene {
         
         
         
-        
-        
-        
         async function enemyrun(pumpkin){ 
                   
-            pumpkin.body.collideWorldBounds = true;           
-            pumpkin.body.velocity.x = Math.random()*1.5+100;       pumpkin.body.velocity.y = Math.random()*5;
+            //pumpkin.body.collideWorldBounds = true;           
+            pumpkin.body.velocity.x = Math.random()*1.5+100;       
+            pumpkin.body.velocity.y = Math.random()*5;
             
             await new Promise((r) =>
             setTimeout(
                 () =>
                     new (function () {
-                        enemyleftrun(pumpkin)
+                        enemyleftrun(pumpkin);
 
                     })(),
                 (Math.random()*2000+1000)
@@ -251,70 +254,94 @@ class InGame extends Phaser.Scene {
             pumpkin.flipX = true;
                 pumpkin.body.velocity.x = Math.random()*(-1.5)-100;       
                 pumpkin.body.velocity.y = Math.random()*5;
-                console.log(pumpkin.body.velocity.x)
+                //console.log(pumpkin.body.velocity.x)
                 
                 await new Promise((r) =>
                     setTimeout(
                     () =>
                     new (function () {
-                    pumpkin.flipX = false
-                    enemyrun(pumpkin)
+                            pumpkin.flipX = false;
+                            enemyrun(pumpkin);
                         })(),
                 (Math.random()*2000+1000)
                     ))
             
             }
     
-        
-        enemy = this.physics.add.sprite(Phaser.Math.Between(10, 100), 250, 'pumpkin-dude');
-        enemy.setScale(3,3);
-        enemy.setOrigin(0.5,0.5);
-        enemyrun(enemy);
-        
-        enemy.setSize(16,16);
-        enemy.body.offset.y = 15;
-        
-        enemy.setPushable(false);
-        
+
+        this.enemies = this.physics.add.group();
+            var enemyArray = map.getObjectLayer('Enemies').objects;
+            for(var i = 0; i < enemyArray.length; i++) {
+                //var enemy = this.enemies.create(player.x + 50, player.y + 50,'pumpkin-dude').setScale(3,3);
+                //enemyrun(enemy);
+                var enemy = this.enemies.create(enemyArray[i].x*3, enemyArray[i].y*3 + 155 - enemyArray[i].height,'pumpkin-dude').setScale(3,3);
+                //console.log(enemy.x + " " + enemy.y);
+                //console.log(player.x + " " + player.y);
+                enemy.setOrigin(0.5,0.5);
+                enemy.setSize(16,16);
+                enemy.body.offset.y = 15;
+                enemy.setPushable(false);
+                enemy.setData('isHit', Boolean(0));      
+                enemy.setData('health', 30);            
+                enemyrun(enemy);      
+        }
+  
         
         player.setData('isHit', Boolean(0));
-                
+        player.setData('Player', Boolean(1));
+
         
-        
-        this.physics.add.collider(enemy, solidMap);
-        this.physics.add.collider(enemy, player, hitplayer, null, this);
-        this.physics.add.collider(enemy, playerSkin);
-        
-        
+        this.physics.add.collider(this.enemies, solidMap);
+        this.physics.add.collider(this.enemies, player, hitEntity, null, this);
+        this.physics.add.collider(this.enemies, playerSkin);
         
         //display health
-        var txt = this.add.text(0, 0, 'hello');
+        var txt = this.add.text(0, 0, '100');
         txt.setScrollFactor(0);
         
-        
-        async function hitplayer(pumpkin, player){
-    
-            if (player.getData('isHit'))
-                return;
-                
-            health-=10;
-            
-            txt.text = health;
-            
-            player.setData('isHit', Boolean(1));
+        var SpaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
 
-            player.setVelocityX((pumpkin.x-player.x)*5);
-            player.setVelocityY(-100);
+        async function hitEntity(entity, attacker){
+    
+            if(SpaceKey.isDown) {
+                var temp = entity;
+                entity = attacker;
+                attacker = temp;
+            }
+
+            if (entity.getData('isHit'))
+                return;
+
+            entity.setData('isHit', Boolean(1));
+
+                            
+            if(entity.getData("Player")) {
+                health-=10;
+                txt.text = health;
+            
+                playerSkin.setVelocityX((attacker.x-entity.x)*5);
+                playerSkin.setVelocityY(-100);
+
+            } else {
+                entity.setData("health",entity.getData("health")-10);
+                if(entity.getData("health") <= 0) {
+                    entity.destroy();
+                    return;
+                }
+            }
+
+            entity.setVelocityX((attacker.x-entity.x)*5);
+            entity.setVelocityY(-100);
             
             
-            player.tint = 0xff0000;
+            entity.tint = 0xff0000;
             
             await new Promise((r) =>
             setTimeout(
                 () =>
                     new (function () {
-                        player.tint = 0xffffff;
-                        player.setData('isHit', Boolean(0));
+                        entity.tint = 0xffffff;
+                        entity.setData('isHit', Boolean(0));
                     })(),
                     500
                 )
@@ -449,9 +476,12 @@ class InGame extends Phaser.Scene {
         // Create a start animation for our player.
         player.anims.play("stand");
         playerSkin.anims.play("standSkin");
-        
-        
-        enemy.anims.play("enemywalk");
+
+
+        this.enemies.children.entries.forEach(enemy => {
+            enemy.anims.play("enemywalk");
+        });
+        //enemy.anims.play("enemywalk");
 
 
         // INPUT EVENTS
@@ -527,6 +557,9 @@ class InGame extends Phaser.Scene {
                 playerSkin.body.offset.y = 22;
                 player.anims.play('attack');
                 playerSkin.anims.play('attackSkin');
+                // Attack
+                if(ref.physics.overlap(ref.enemies,player, hitEntity, null, ref))
+                    console.log("WTHAT");
 
         }); 
         this.input.keyboard.on('keyup-SPACE', function (event) {
@@ -534,7 +567,6 @@ class InGame extends Phaser.Scene {
                 playerSkin.setSize(16, 16);
                 player.body.offset.y = 22;
                 playerSkin.body.offset.y=22;
-            
                 }
         );
         
@@ -644,7 +676,7 @@ var config = {
         default: "arcade",
         arcade: {
             gravity: { y: 300 },
-            debug: true
+            debug: false
         },
     },
     scene: [
