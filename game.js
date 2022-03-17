@@ -51,12 +51,14 @@ class LoadAssets extends Phaser.Scene {
         this.load.image("button-down","assets/tilesets/lab/buttondown.png");
         this.load.tilemapTiledJSON('map',"assets/maps/tilemap.json");
         this.load.spritesheet('skin', 'assets/spritesheets/skin.png', { frameWidth: 48, frameHeight: 48 })
-        // Spritesheets
+        
+        // Tiles
         this.load.image("lab-tiles","assets/tilesets/lab/lab.png");
         this.load.image("forest-tiles","assets/tilesets/forest/Tiles/TilesNonSliced.png");
         this.load.image("swamp-tiles","assets/tilesets/swamp/1 Tiles/Tileset.png");
         this.load.image("industrial-tiles","assets/tilesets/lab/industrial zone/industrial.png");
         this.load.image("level1-tiles","assets/tilesets/custom/level1.png");
+        this.load.image("level2-tiles","assets/tilesets/custom/level2.png");
 
         // Maps
         this.load.tilemapTiledJSON('lab-map',"assets/maps/tilemap.json");
@@ -64,6 +66,7 @@ class LoadAssets extends Phaser.Scene {
         this.load.tilemapTiledJSON('swamp-map',"assets/maps/swamp.json");
         this.load.tilemapTiledJSON('industrial-map',"assets/maps/industrial.json");
         this.load.tilemapTiledJSON('level1-map',"assets/maps/level1.json");
+        this.load.tilemapTiledJSON('level2-map',"assets/maps/level2.json");
 
         // Backgrounds
         this.load.image('lab-back', 'assets/backgrounds/Scifi Lab/layers/back.png');
@@ -82,6 +85,9 @@ class LoadAssets extends Phaser.Scene {
         this.load.image('level1-back', 'assets/tilesets/lab/industrial zone/2 Background/2.png');
 		this.load.image('level1-middle', 'assets/tilesets/lab/industrial zone/2 Background/3.png');
 		this.load.image('level1-front', 'assets/tilesets/lab/industrial zone/2 Background/4.png');
+        this.load.image('level2-back', 'assets/maps/Level2 Background.png');
+		this.load.image('level2-middle', 'assets/maps/transparent.png');
+		this.load.image('level2-front', 'assets/maps/transparent.png');
    
     }
     create () {
@@ -141,6 +147,7 @@ class InGame extends Phaser.Scene {
             new Map("swamp",-20,200,700, 4),
             new Map("industrial",400,600,600, 2.4),
             new Map("level1",400,600,600, 2.4)
+            //new Map("level2",400,600,600, 2.4)
         ]
         var currentMap = mapArray[4];
 
@@ -177,7 +184,10 @@ class InGame extends Phaser.Scene {
         const map = this.make.tilemap({ key: currentMap.mapName});
         const tileset = map.addTilesetImage(currentMap.name,currentMap.tilesetName);
         const backMap = map.createLayer("Background", tileset, 0, 200);
+        const foreMap = map.createLayer("Foreground", tileset, 0, 200);
         const solidMap = map.createLayer("Solid", tileset, 0, 200);
+        const doorMap = map.createLayer("Door", tileset, 0, 200);
+        const ladderMap = map.createLayer("Ladder", tileset, 0, 200);
         
         this.doors = this.physics.add.staticGroup();
         var doorArray = map.getObjectLayer('Doors').objects;
