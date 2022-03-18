@@ -213,6 +213,8 @@ class InGame extends Phaser.Scene {
         solidMap.setScale(3,3);
         backMap.setScale(3,3);
         foreMap.setScale(3,3);
+        doorMap.setScale(3,3);
+        ladderMap.setScale(3,3);
         solidMap.setSize(300,3);
         
         //Text
