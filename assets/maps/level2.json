@@ -54,7 +54,31 @@
          "draworder":"topdown",
          "id":6,
          "name":"Doors",
-         "objects":[],
+         "objects":[
+                {
+                 "height":0,
+                 "id":1,
+                 "name":"",
+                 "point":true,
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":73.3333333333333,
+                 "y":420
+                }, 
+                {
+                 "height":0,
+                 "id":2,
+                 "name":"",
+                 "point":true,
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":1382.66666666667,
+                 "y":696
+                }],
          "opacity":1,
          "type":"objectgroup",
          "visible":true,
@@ -74,16 +98,16 @@
          "y":0
         }],
  "nextlayerid":7,
- "nextobjectid":1,
+ "nextobjectid":3,
  "orientation":"orthogonal",
  "renderorder":"right-down",
- "tiledversion":"1.8.1",
+ "tiledversion":"1.8.2",
  "tileheight":16,
  "tilesets":[
         {
          "columns":64,
          "firstgid":1,
-         "image":"..\/..\/..\/..\/..\/Desktop\/Level 2\/level2.png",
+         "image":"..\/tilesets\/custom\/level2.png",
          "imageheight":1792,
          "imagewidth":1024,
          "margin":0,

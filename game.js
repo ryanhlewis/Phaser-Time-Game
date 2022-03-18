@@ -24,6 +24,7 @@ var enemy;
 var numOfEnemies = 10;       
 var enemies;
 var health = 100;
+var godMode = false;
 
 var currentMapNum = 0;
 
@@ -146,10 +147,10 @@ class InGame extends Phaser.Scene {
             new Map("forest",500,500,600, 4),
             new Map("swamp",-20,200,700, 4),
             new Map("industrial",400,600,600, 2.4),
-            new Map("level1",400,600,600, 2.4)
-            //new Map("level2",400,600,600, 2.4)
+            new Map("level1",400,600,600, 2.4),
+            new Map("level2",400,600,600, 2.4)
         ]
-        var currentMap = mapArray[4];
+        var currentMap = mapArray[5];
 
 
         // BACKGROUNDS
@@ -211,6 +212,7 @@ class InGame extends Phaser.Scene {
         // DO NOT CHANGE.
         solidMap.setScale(3,3);
         backMap.setScale(3,3);
+        foreMap.setScale(3,3);
         solidMap.setSize(300,3);
         
         //Text
@@ -280,8 +282,9 @@ class InGame extends Phaser.Scene {
             
             }
     
-
+        
         this.enemies = this.physics.add.group();
+        /*
             var enemyArray = map.getObjectLayer('Enemies').objects;
             for(var i = 0; i < enemyArray.length; i++) {
                 //var enemy = this.enemies.create(player.x + 50, player.y + 50,'pumpkin-dude').setScale(3,3);
@@ -297,6 +300,7 @@ class InGame extends Phaser.Scene {
                 enemy.setData('health', 30);            
                 enemyrun(enemy);      
         }
+    */
   
         
         player.setData('isHit', Boolean(0));
@@ -395,6 +399,7 @@ class InGame extends Phaser.Scene {
 
         //BUTTON EVENT
         this.buttons = this.physics.add.staticGroup();
+        /*
         var buttonArray = map.getObjectLayer('Buttons').objects;
         for(var i = 0; i < buttonArray.length; i++) {
             //console.log(buttonArray[0]);
@@ -455,6 +460,7 @@ class InGame extends Phaser.Scene {
             )
         );
         }
+        */
 
         
         
@@ -553,10 +559,10 @@ class InGame extends Phaser.Scene {
         player.anims.play("stand");
         playerSkin.anims.play("standSkin");
 
-
+/*
         this.enemies.children.entries.forEach(enemy => {
             enemy.anims.play("enemywalk");
-        });
+        });*/
         //enemy.anims.play("enemywalk");
 
 
@@ -661,6 +667,13 @@ class InGame extends Phaser.Scene {
             }
         });
         
+        this.input.keyboard.on('keydown-G', function (event) {   
+            // GOD-MODE
+            godMode = !godMode;
+            player.body.allowGravity = godMode;
+            console.log("Godmode has been " + (godMode ? "enabled" : "disabled") );
+        });
+
         this.input.keyboard.on('keydown-ESC', function (event) {   
             panel.setVisible(false);
         });
