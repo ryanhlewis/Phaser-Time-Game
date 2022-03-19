@@ -11,6 +11,8 @@ It's TIME to save time!
 
 Made by [Alyssa](https://github.com/AlyssaBurtscher), [Angela](https://github.com/angelac817), and [Ryan](https://github.com/ryanhlewis).
 
+Here's a link to play the [latest version of our game](https://ryanhlewis.itch.io/time-trodden).
+
 ## Sprint 1
 
 To make a simple working prototype of our game, we added a player with movement, animations, a camera that follows him,
@@ -21,5 +23,17 @@ as well as a basic tilemap created with TILED. Here's a permanent link to play [
 
 ## Sprint 2
 
-Sprint 2 is currently in progress.
+To make a proof of environment art for our game, we added a several short maps and their tilesets, an attacking feature,
+as well as backgrounds that correspond to the levels. Here's a permanent link to play [Sprint 2: The Environment](//).
+
+## Sprint 3
+
+To make visible gameplay for our game, we added the first level, the Lab, functional enemy mechanics and player health, 
+as well as a basic puzzle system. Here's a permanent link to play [Sprint 3: The Gameplay](//v6p9d9t4.ssl.hwcdn.net/html/5387180/index.html).
+
+![Sprint3](https://user-images.githubusercontent.com/76540311/159112012-51f09d84-202e-4960-9216-bf1850931cf6.gif)
+
+## Sprint 4
+
+Sprint 4 is currently in progress.
 
