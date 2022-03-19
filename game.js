@@ -47,7 +47,7 @@ class LoadAssets extends Phaser.Scene {
         this.load.image('vials', 'assets/tilesets/lab/vials.png');
         this.load.image('window', 'assets/icons/Card X2/Card X2.png');
         this.load.image("tiles","assets/tilesets/lab/lab.png");
-        this.load.image("door","assets/tilesets/lab/door.png");
+        this.load.image("door","assets/maps/door.png");
         this.load.image("button-up","assets/tilesets/lab/button.png");
         this.load.image("button-down","assets/tilesets/lab/buttondown.png");
         this.load.tilemapTiledJSON('map',"assets/maps/tilemap.json");
@@ -86,9 +86,9 @@ class LoadAssets extends Phaser.Scene {
         this.load.image('level1-back', 'assets/tilesets/lab/industrial zone/2 Background/2.png');
 		this.load.image('level1-middle', 'assets/tilesets/lab/industrial zone/2 Background/3.png');
 		this.load.image('level1-front', 'assets/tilesets/lab/industrial zone/2 Background/4.png');
-        this.load.image('level2-back', 'assets/maps/Level2 Background.png');
+        this.load.image('level2-back', 'assets/maps/transparent.png');
 		this.load.image('level2-middle', 'assets/maps/transparent.png');
-		this.load.image('level2-front', 'assets/maps/transparent.png');
+		this.load.image('level2-front', 'assets/maps/Level2 Background.png');
    
     }
     create () {
@@ -148,7 +148,7 @@ class InGame extends Phaser.Scene {
             new Map("swamp",-20,200,700, 4),
             new Map("industrial",400,600,600, 2.4),
             new Map("level1",400,600,600, 2.4),
-            new Map("level2",400,600,600, 2.4)
+            new Map("level2",400,600,825, 3)
         ]
         var currentMap = mapArray[5];
 
