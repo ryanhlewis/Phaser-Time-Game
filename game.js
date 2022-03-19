@@ -24,6 +24,7 @@ var enemy;
 var numOfEnemies = 10;       
 var enemies;
 var health = 100;
+var godMode = false;
 
 var currentMapNum = 0;
 
@@ -46,17 +47,19 @@ class LoadAssets extends Phaser.Scene {
         this.load.image('vials', 'assets/tilesets/lab/vials.png');
         this.load.image('window', 'assets/icons/Card X2/Card X2.png');
         this.load.image("tiles","assets/tilesets/lab/lab.png");
-        this.load.image("door","assets/tilesets/lab/door.png");
+        this.load.image("door","assets/maps/door.png");
         this.load.image("button-up","assets/tilesets/lab/button.png");
         this.load.image("button-down","assets/tilesets/lab/buttondown.png");
         this.load.tilemapTiledJSON('map',"assets/maps/tilemap.json");
         this.load.spritesheet('skin', 'assets/spritesheets/skin.png', { frameWidth: 48, frameHeight: 48 })
-        // Spritesheets
+        
+        // Tiles
         this.load.image("lab-tiles","assets/tilesets/lab/lab.png");
         this.load.image("forest-tiles","assets/tilesets/forest/Tiles/TilesNonSliced.png");
         this.load.image("swamp-tiles","assets/tilesets/swamp/1 Tiles/Tileset.png");
         this.load.image("industrial-tiles","assets/tilesets/lab/industrial zone/industrial.png");
         this.load.image("level1-tiles","assets/tilesets/custom/level1.png");
+        this.load.image("level2-tiles","assets/tilesets/custom/level2.png");
 
         // Maps
         this.load.tilemapTiledJSON('lab-map',"assets/maps/tilemap.json");
@@ -64,6 +67,7 @@ class LoadAssets extends Phaser.Scene {
         this.load.tilemapTiledJSON('swamp-map',"assets/maps/swamp.json");
         this.load.tilemapTiledJSON('industrial-map',"assets/maps/industrial.json");
         this.load.tilemapTiledJSON('level1-map',"assets/maps/level1.json");
+        this.load.tilemapTiledJSON('level2-map',"assets/maps/level2.json");
 
         // Backgrounds
         this.load.image('lab-back', 'assets/backgrounds/Scifi Lab/layers/back.png');
@@ -82,6 +86,9 @@ class LoadAssets extends Phaser.Scene {
         this.load.image('level1-back', 'assets/tilesets/lab/industrial zone/2 Background/2.png');
 		this.load.image('level1-middle', 'assets/tilesets/lab/industrial zone/2 Background/3.png');
 		this.load.image('level1-front', 'assets/tilesets/lab/industrial zone/2 Background/4.png');
+        this.load.image('level2-back', 'assets/maps/transparent.png');
+		this.load.image('level2-middle', 'assets/maps/transparent.png');
+		this.load.image('level2-front', 'assets/maps/Level2 Background.png');
    
     }
     create () {
@@ -140,9 +147,10 @@ class InGame extends Phaser.Scene {
             new Map("forest",500,500,600, 4),
             new Map("swamp",-20,200,700, 4),
             new Map("industrial",400,600,600, 2.4),
-            new Map("level1",400,600,600, 2.4)
+            new Map("level1",400,600,600, 2.4),
+            new Map("level2",400,600,825, 3)
         ]
-        var currentMap = mapArray[4];
+        var currentMap = mapArray[5];
 
 
         // BACKGROUNDS
@@ -177,7 +185,10 @@ class InGame extends Phaser.Scene {
         const map = this.make.tilemap({ key: currentMap.mapName});
         const tileset = map.addTilesetImage(currentMap.name,currentMap.tilesetName);
         const backMap = map.createLayer("Background", tileset, 0, 200);
+        const foreMap = map.createLayer("Foreground", tileset, 0, 200);
         const solidMap = map.createLayer("Solid", tileset, 0, 200);
+        const doorMap = map.createLayer("Door", tileset, 0, 200);
+        const ladderMap = map.createLayer("Ladder", tileset, 0, 200);
         
         this.doors = this.physics.add.staticGroup();
         var doorArray = map.getObjectLayer('Doors').objects;
@@ -201,6 +212,9 @@ class InGame extends Phaser.Scene {
         // DO NOT CHANGE.
         solidMap.setScale(3,3);
         backMap.setScale(3,3);
+        foreMap.setScale(3,3);
+        doorMap.setScale(3,3);
+        ladderMap.setScale(3,3);
         solidMap.setSize(300,3);
         
         //Text
@@ -270,8 +284,9 @@ class InGame extends Phaser.Scene {
             
             }
     
-
+        
         this.enemies = this.physics.add.group();
+        /*
             var enemyArray = map.getObjectLayer('Enemies').objects;
             for(var i = 0; i < enemyArray.length; i++) {
                 //var enemy = this.enemies.create(player.x + 50, player.y + 50,'pumpkin-dude').setScale(3,3);
@@ -287,6 +302,7 @@ class InGame extends Phaser.Scene {
                 enemy.setData('health', 30);            
                 enemyrun(enemy);      
         }
+    */
   
         
         player.setData('isHit', Boolean(0));
@@ -385,6 +401,7 @@ class InGame extends Phaser.Scene {
 
         //BUTTON EVENT
         this.buttons = this.physics.add.staticGroup();
+        /*
         var buttonArray = map.getObjectLayer('Buttons').objects;
         for(var i = 0; i < buttonArray.length; i++) {
             //console.log(buttonArray[0]);
@@ -445,6 +462,7 @@ class InGame extends Phaser.Scene {
             )
         );
         }
+        */
 
         
         
@@ -543,10 +561,10 @@ class InGame extends Phaser.Scene {
         player.anims.play("stand");
         playerSkin.anims.play("standSkin");
 
-
+/*
         this.enemies.children.entries.forEach(enemy => {
             enemy.anims.play("enemywalk");
-        });
+        });*/
         //enemy.anims.play("enemywalk");
 
 
@@ -651,6 +669,13 @@ class InGame extends Phaser.Scene {
             }
         });
         
+        this.input.keyboard.on('keydown-G', function (event) {   
+            // GOD-MODE
+            godMode = !godMode;
+            player.body.allowGravity = godMode;
+            console.log("Godmode has been " + (godMode ? "enabled" : "disabled") );
+        });
+
         this.input.keyboard.on('keydown-ESC', function (event) {   
             panel.setVisible(false);
         });
