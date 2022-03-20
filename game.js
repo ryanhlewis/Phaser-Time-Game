@@ -2,6 +2,8 @@
 // Made for CS329E: Elements of Game Development
 // By Alyssa, Angela, and Ryan
 
+import MultiKey from "./multikey.js";
+
 // Global Variables
 // TODO - Try to keep these to a minimum.
 
@@ -18,21 +20,18 @@ var vials;
 var scoreText;
 var vialsT;
 var panel;
-var playerSkin;
 var savedCameraPos;
 var enemy;
 var numOfEnemies = 10;       
 var enemies;
 var health = 100;
 var godMode = false;
+var leftInput;
+var rightInput;
+var jumpInput;
+var attackInput;
 
 var currentMapNum = 0;
-
-// Character Color Picker (uses JQUERY)
-$("#colorChoice").change(function(){
-   playerSkin.setTint("0x" + $(this).val().substring(1));
-});
-
 
 // This scene loads all game assets, and is never loaded again.
 // This is due to Phaser repeatedly calling preload() methods
@@ -115,7 +114,17 @@ class InGame extends Phaser.Scene {
     }
 
     preload() {
+        // Plugins
+        this.load.scenePlugin('Slopes', 'phaser-slopes.min.js');
+
         cursors = this.input.keyboard.createCursorKeys();
+            
+        const { LEFT, RIGHT, UP, A, D, W, SPACE } = Phaser.Input.Keyboard.KeyCodes;
+        leftInput = new MultiKey(this, [LEFT, A]);
+        rightInput = new MultiKey(this, [RIGHT, D]);
+        jumpInput = new MultiKey(this, [UP, W]);
+        attackInput = new MultiKey(this, [SPACE]);
+
     }
     
     
@@ -150,7 +159,7 @@ class InGame extends Phaser.Scene {
             new Map("level1",400,600,600, 2.4),
             new Map("level2",400,600,825, 3)
         ]
-        var currentMap = mapArray[5];
+        var currentMap = mapArray[4];
 
 
         // BACKGROUNDS
@@ -190,10 +199,13 @@ class InGame extends Phaser.Scene {
         const doorMap = map.createLayer("Door", tileset, 0, 200);
         const ladderMap = map.createLayer("Ladder", tileset, 0, 200);
         
-        this.doors = this.physics.add.staticGroup();
+        this.doors = [];
         var doorArray = map.getObjectLayer('Doors').objects;
         for(var i = 0; i < doorArray.length; i++) {
-            var doorObject = this.doors.create(doorArray[i].x*3, doorArray[i].y*3 + 155 - doorArray[i].height, 'door').setScale(3,3);
+            var doorObject = this.matter.add.image(doorArray[i].x*3, doorArray[i].y*3 + 155 - doorArray[i].height, 'door').setScale(3,3);
+            doorObject.body.isSensor = true;
+            doorObject.body.isStatic = true;
+            this.doors.push(doorObject);
             // Attach door link
             if(i % 2 == 0 && i != doorArray.length-1) {
                 doorObject.setData('teleport', [doorArray[i+1].x*3,doorArray[i+1].y*3 + 155]  );
@@ -203,7 +215,7 @@ class InGame extends Phaser.Scene {
         }
         
         
-        //vials = this.physics.add.staticGroup();
+        //vials = this.matter.add.staticGroup();
         //var cabinet = vials.create(430, 1065, 'vials').setScale(3,3);
         // For testing purposes, set the sprite alpha to 0-
         //cabinet.alpha = 0;
@@ -222,36 +234,80 @@ class InGame extends Phaser.Scene {
         this.add.text(1135, 975, 'To Interact', { fontSize: '32px', fill: '#FFFFFF' });
         this.add.text(3850, 2400, 'Press Space to attack.', { fontSize: '32px', fill: '#FFFFFF' });
         
-        this.player = this.physics.add.group();
-
-        player = this.player.create(400, 900, 'player');
 
 
-//        player = this.physics.add.sprite(400, 900, 'player');
+        player = this.matter.add.sprite(400, 900, 'player');
+        console.log(player);
+
+//        player = this.matter.add.sprite(400, 900, 'player');
         //player.body.offset.x = -20;
         //player.y = 100;
         player.setScale(3,3);
         
         panel = this.add.image(0, 0, 'window');
         panel.setVisible(false);
-        playerSkin = this.physics.add.sprite(400, 900, 'skin');
-        playerSkin.setScale(3,3);
-        //playerSkin.body.offset.x = -20;
-        //playerSkin.y = 100;
         player.setSize(16,16);
-        playerSkin.setSize(16,16);
-        player.setOrigin(0.5,0.5);
-        player.body.offset.y = 22;
-        playerSkin.body.offset.y = 22;
+        player.setOrigin(0.5,0.28);
+        player.body.centerOffset.y = 22;
 
-        
-        
+        const { Body, Bodies } = Phaser.Physics.Matter.Matter; // Native Matter modules
+        const { width: w, height: h } = player;
+        player.mainBody = Bodies.rectangle(0,0, w * 2, h*3, {
+          chamfer: { radius: 10 }
+        });
+        player.bottom = Bodies.rectangle(0, 10, w * 1, h*2 + 20, { isSensor: true }),
+        player.left = Bodies.rectangle(-w * 1.35, 1, 70, h * 1.5, { isSensor: true }),
+        player.right = Bodies.rectangle(w * 1.35, 1, 70, h * 1.5, { isSensor: true })
+        const compoundBody = Body.create({
+          parts: [
+            player.mainBody,
+            player.bottom,
+            player.left,
+            player.right
+          ],
+          frictionStatic: 0,
+          frictionAir: 0.02,
+          friction: 0.1,
+          // The offset here allows us to control where the sprite is placed relative to the
+          // matter body's x and y - here we want the sprite centered over the matter body.
+          render: { sprite: { xOffset: 0.5, yOffset: 0.6 } }
+        });
+        console.log(player.mainBody);
+        player.onGround = false;
+
+        function onGround() {
+            player.onGround = true;
+            //console.log("entered ground");
+        }
+
+        function resetTouching() {
+            player.onGround = false;
+        }
+
+        this.matter.world.on("beforeupdate", resetTouching, this);
+
+        console.log(player.bottom);
+
+        this.matterCollision.addOnCollideStart({
+            objectA: player.bottom,
+            callback: onGround,
+            context: this
+          });
+          this.matterCollision.addOnCollideActive({
+            objectA: player.bottom,
+            callback: onGround,
+            context: this
+          });
+
+
+        player.setExistingBody(compoundBody).setFixedRotation();
         
         
         async function enemyrun(pumpkin){ 
                   
-            //pumpkin.body.collideWorldBounds = true;           
-            pumpkin.body.velocity.x = Math.random()*1.5+100;       
+            //pumpkin.body.collideWorldBounds = true; 
+            pumpkin.setVelocityX(Math.random()*(1.5)+2);          
+            //pumpkin.body.velocity.x = Math.random()*1.5+100;       
             pumpkin.body.velocity.y = Math.random()*5;
             
             await new Promise((r) =>
@@ -268,9 +324,9 @@ class InGame extends Phaser.Scene {
         
         async function enemyleftrun(pumpkin){
             pumpkin.flipX = true;
-                pumpkin.body.velocity.x = Math.random()*(-1.5)-100;       
+            pumpkin.setVelocityX(Math.random()*(-1.5)-2);
+                //pumpkin.body.velocity.x = Math.random()*(-1.5)-100;       
                 pumpkin.body.velocity.y = Math.random()*5;
-                //console.log(pumpkin.body.velocity.x)
                 
                 await new Promise((r) =>
                     setTimeout(
@@ -285,33 +341,61 @@ class InGame extends Phaser.Scene {
             }
     
         
-        this.enemies = this.physics.add.group();
-        /*
-            var enemyArray = map.getObjectLayer('Enemies').objects;
+        //this.enemies = this.matter.add.group();
+        this.enemies = [];
+        var enemyArray = [];
+        try {
+            enemyArray = map.getObjectLayer('Enemies').objects;
+        } catch (e) {
+            console.log("No enemies in this map!");
+        }
             for(var i = 0; i < enemyArray.length; i++) {
-                //var enemy = this.enemies.create(player.x + 50, player.y + 50,'pumpkin-dude').setScale(3,3);
+                //var enemy = this.matter.add.sprite(player.x + 50, player.y + 50,'pumpkin-dude').setScale(3,3);
                 //enemyrun(enemy);
-                var enemy = this.enemies.create(enemyArray[i].x*3, enemyArray[i].y*3 + 155 - enemyArray[i].height,'pumpkin-dude').setScale(3,3);
+                var enemy = this.matter.add.sprite(0,0,'pumpkin-dude').setScale(3,3);
+                var { width: ew, height: eh } = enemy;
+                const mainBody = Bodies.rectangle(0,0, ew * 2, eh*1.5, {
+                  chamfer: { radius: 10 }
+                });
+                var cB = Body.create({
+                  parts: [
+                    mainBody,
+                  ],
+                  frictionStatic: 0,
+                  frictionAir: 0,
+                  friction: 0,
+                  // The offset here allows us to control where the sprite is placed relative to the
+                  // matter body's x and y - here we want the sprite centered over the matter body.
+                  // Overwritten by future setOrigin..
+                  render: { sprite: { xOffset: 0.5, yOffset: 0.5 } }
+                });
+                enemy.setExistingBody(cB).setFixedRotation();
+                enemy.x = enemyArray[i].x*3;
+                enemy.y = enemyArray[i].y*3 + 155 - enemyArray[i].height;
+
+                this.enemies.push(enemy);
                 //console.log(enemy.x + " " + enemy.y);
                 //console.log(player.x + " " + player.y);
-                enemy.setOrigin(0.5,0.5);
+                enemy.setOrigin(0.5,0.6);
                 enemy.setSize(16,16);
-                enemy.body.offset.y = 15;
-                enemy.setPushable(false);
+                enemy.body.centerOffset.y = 15;
+                //enemy.body.setPushable(false);
                 enemy.setData('isHit', Boolean(0));      
                 enemy.setData('health', 30);            
                 enemyrun(enemy);      
         }
-    */
   
         
         player.setData('isHit', Boolean(0));
         player.setData('Player', Boolean(1));
 
         
-        this.physics.add.collider(this.enemies, solidMap);
-        this.physics.add.collider(this.enemies, player, hitEntity, null, this);
-        this.physics.add.collider(this.enemies, playerSkin);
+        //this.matter.add.collider(this.enemies, solidMap);
+        solidMap.setCollisionByExclusion([-1]);
+        this.matter.world.convertTilemapLayer(solidMap);
+
+
+       // this.matter.add.collider(this.enemies, player, hitEntity, null, this);
         
         //display health
         var txt = this.add.text(0, 0, '100');
@@ -319,13 +403,11 @@ class InGame extends Phaser.Scene {
         
         var SpaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
 
-        async function hitEntity(entity, attacker){
-    
-            if(SpaceKey.isDown) {
-                var temp = entity;
-                entity = attacker;
-                attacker = temp;
-            }
+
+        this.hitEntity = async function(collision){
+
+            var entity = collision.gameObjectA;
+            var attacker = collision.gameObjectB
 
             if (entity.getData('isHit'))
                 return;
@@ -336,9 +418,6 @@ class InGame extends Phaser.Scene {
             if(entity.getData("Player")) {
                 health-=10;
                 txt.text = health;
-            
-                playerSkin.setVelocityX((attacker.x-entity.x)*5);
-                playerSkin.setVelocityY(-100);
 
             } else {
                 entity.setData("health",entity.getData("health")-10);
@@ -348,8 +427,8 @@ class InGame extends Phaser.Scene {
                 }
             }
 
-            entity.setVelocityX((attacker.x-entity.x)*5);
-            entity.setVelocityY(-100);
+            entity.setVelocityX((attacker.x-entity.x)*0.5);
+            entity.setVelocityY(-10);
             
             
             entity.tint = 0xff0000;
@@ -366,22 +445,76 @@ class InGame extends Phaser.Scene {
             );
             }
 
-        // Player collider has been created- put all collisions here.
+            this.matterCollision.addOnCollideActive({
+                objectA: player.mainBody,
+                objectB: this.enemies,
+                callback: this.hitEntity,
+                context: this
+            });
 
-        this.physics.add.overlap(player, this.doors,doorOpen,null,this);
+            this.checkHitRight = function(collision) {
+                if(attackInput.isDown()) {
+                    if(!player.flipX) {
+                        this.hitEntity(collision);
+                    }
+                }
+            }
+            this.checkHitLeft = function(collision) {
+                if(attackInput.isDown()) {
+                    if(player.flipX) {
+                        this.hitEntity(collision);
+                    }
+                }
+            }
+
+            this.matterCollision.addOnCollideActive({
+                objectA: this.enemies,
+                objectB: player.left,
+                callback: this.checkHitLeft,
+                context: this
+            });
+
+            this.matterCollision.addOnCollideActive({
+                objectA: this.enemies,
+                objectB: player.right,
+                callback: this.checkHitRight,
+                context: this
+            });
+
+
+        // Player collider has been created- put all collisions here.
+        this.matterCollision.addOnCollideActive({
+            objectA: player.mainBody,
+            objectB: this.doors,
+            callback: doorOpen,
+            context: this
+        });
+
+        this.matterCollision.addOnCollideEnd({
+            objectA: player.mainBody,
+            objectB: this.doors,
+            callback: doorLeave,
+            context: this
+        });
+
+        function doorLeave(collision) {
+            scoreText.setVisible(false);
+        }
 
         var EnterKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER);
 
         var usedDoor = false;
         // Each door is mapped to the next door down and up.
-        function doorOpen(player,door) {
-            //console.log(door);
+        function doorOpen(collision) {
+            scoreText.x = player.x - 100;
+            scoreText.y = player.y + 50;
+            scoreText.setVisible(true);
+            //console.log(collision);
             if(EnterKey.isDown && !usedDoor) {
+                console.log("Using door!");
                 usedDoor = true;
-                player.x = door.getData('teleport')[0];
-                player.y = door.getData('teleport')[1];
-                playerSkin.x = door.getData('teleport')[0];
-                playerSkin.y = door.getData('teleport')[1];
+                player.x = collision.gameObjectB.getData('teleport')[0];
+                player.y = collision.gameObjectB.getData('teleport')[1];
                 this.cameras.main.startFollow(player);
                 doorReset();
             }
@@ -400,23 +533,36 @@ class InGame extends Phaser.Scene {
             
 
         //BUTTON EVENT
-        this.buttons = this.physics.add.staticGroup();
-        /*
-        var buttonArray = map.getObjectLayer('Buttons').objects;
+        this.buttons = [];
+        var buttonArray = [];
+        try {
+        buttonArray = map.getObjectLayer('Buttons').objects;
+        } catch(e) {
+            console.log("No buttons in this map.");
+        }
         for(var i = 0; i < buttonArray.length; i++) {
             //console.log(buttonArray[0]);
-            var buttonObject = this.buttons.create(buttonArray[i].x*3, buttonArray[i].y*3 + 200 - buttonArray[i].height, 'button-up').setScale(3,3);
+            var buttonObject = this.matter.add.image(buttonArray[i].x*3, buttonArray[i].y*3 + 200 - buttonArray[i].height, 'button-up').setScale(3,3);
+            buttonObject.body.isStatic = true;
+            this.buttons.push(buttonObject);
             buttonObject.setSize(50,50);
             buttonObject.setData('order', buttonArray[i].properties[0].value);
             buttonObject.setData('isDown', false);
             //console.log(buttonObject);
         }
-        this.physics.add.collider(player, this.buttons,buttonPress,null,this);
-        this.physics.add.collider(playerSkin, this.buttons);
+        //this.matter.add.collider(player, this.buttons,buttonPress,null,this);
+        this.matterCollision.addOnCollideActive({
+            objectA: player.bottom,
+            objectB: this.buttons,
+            callback: buttonPress,
+            context: this
+        });
+
         // Each door is mapped to the next door down and up.
-        function buttonPress(player,button) {
+        function buttonPress(collision) {
+            var button = collision.gameObjectB;
             //console.log(button);
-            if(player.body.touching.down && button.body.touching.up) {
+            
                 button.setSize(50,25);
                 button.setTexture('button-down');
                 //console.log("on botton");
@@ -425,8 +571,8 @@ class InGame extends Phaser.Scene {
                     // Check if other buttons are pressed in correct order
                     //console.log(this.buttons);
                     var currentOrder = button.getData('order');
-                    for(var i = 0; i < this.buttons.children.entries.length; i++) {
-                        var compareButton = this.buttons.children.entries[i];
+                    for(var i = 0; i < this.buttons.length; i++) {
+                        var compareButton = this.buttons[i];
                         //console.log(compareButton);
                         if(compareButton.getData('order') > currentOrder && compareButton.getData('isDown')) {
                             console.log("reset");
@@ -438,11 +584,11 @@ class InGame extends Phaser.Scene {
                     button.setData('isDown', true);
                     //buttonReset(button);
                 }
-            }
+
         }
         function resetAllButtons() {
-            for(var i = 0; i < ref.buttons.children.entries.length; i++) {
-                var compareButton = ref.buttons.children.entries[i];
+            for(var i = 0; i < ref.buttons.length; i++) {
+                var compareButton = ref.buttons[i];
                 buttonReset(compareButton);
             }
         }
@@ -454,15 +600,15 @@ class InGame extends Phaser.Scene {
                         button.setSize(50,50);
                         button.setData('isDown', false);
                         button.setTexture('button-up');
-                        if(ref.physics.overlap(player, button)) {
-                            player.setVelocityY(-200);
+                        if(ref.matter.overlap(player, button)) {
+                            player.setVelocityY(-20);
                         } 
                     })(),
                 1000
             )
         );
         }
-        */
+        
 
         
         
@@ -499,13 +645,17 @@ class InGame extends Phaser.Scene {
 
         // COLLISIONS
         //solidMap.setCollisionBetween(1, 999, true, 'Solid');
-        solidMap.setCollisionByExclusion([-1]);
-        this.physics.add.collider(player,solidMap,onGround,null,this);
+        //this.matter.add.collider(player,solidMap,onGround,null,this);
+        /*this.matterCollision.addOnCollideStart({
+            objectA: player,
+            objectB: solidMap,
+            callback: onGround,
+            context: this
+          });*/
         
         // Overlap
         scoreText = this.add.text(0, 0, 'Press Enter', { fontSize: '32px', fill: '#FFFFFF' });
         scoreText.setVisible(false);
-        this.physics.add.collider(playerSkin,solidMap,onGround,null,this);
 
         // ANIMATIONS
         // To simplify this, we have created an addAnimation function,
@@ -559,104 +709,15 @@ class InGame extends Phaser.Scene {
 
         // Create a start animation for our player.
         player.anims.play("stand");
-        playerSkin.anims.play("standSkin");
 
-/*
-        this.enemies.children.entries.forEach(enemy => {
+
+        this.enemies.forEach(enemy => {
             enemy.anims.play("enemywalk");
-        });*/
+        });
         //enemy.anims.play("enemywalk");
-
-
-        // INPUT EVENTS
-        // Create different inputs for the player.
-        // Controller support can be added here.
-        this.input.keyboard.on('keydown-LEFT', function (event) {
-            // Flip textures
-            player.flipX = true;
-            playerSkin.flipX = true;
-
-            // Apply velocities
-            player.setVelocityX(-200);
-            playerSkin.setVelocityX(-200);
-
-            // Apply animations
-            if(player.body.onFloor()) {
-            player.anims.play('walk');
-            playerSkin.anims.play('walkSkin');
-            }
-
-        });
-
-        this.input.keyboard.on('keydown-RIGHT', function (event) {
-            player.flipX = false;
-            playerSkin.flipX = false;
-            player.setVelocityX(200);
-            playerSkin.setVelocityX(200);
-
-            if(player.body.onFloor()) {
-            player.anims.play('walk');
-            playerSkin.anims.play('walkSkin');
-            }
-        });
-
-        this.input.keyboard.on('keyup-RIGHT', function (event) {
-            // If the user isn't moving left-
-            if(!cursors.left.isDown) {
-                player.setVelocityX(0);
-                playerSkin.setVelocityX(0);
-
-                if(player.body.onFloor()) {
-                    player.anims.play('stand');
-                    playerSkin.anims.play("standSkin");
-                }
-            }
-        });
-
-        this.input.keyboard.on('keyup-LEFT', function (event) {
-            // If the user isn't moving right-
-            if(!cursors.right.isDown) {
-                player.setVelocityX(0);
-                playerSkin.setVelocityX(0);
-                if(player.body.onFloor()) {
-                    player.anims.play('stand');
-                    playerSkin.anims.play("standSkin");
-                }
-            }
-        });
-
-        this.input.keyboard.on('keydown-UP', function (event) {
-            if(player.body.onFloor()) {
-                player.setVelocityY(-200);
-                playerSkin.setVelocityY(-200);
-                player.anims.play('jump', true);
-                playerSkin.anims.play('jumpSkin', true);
-            }
-        });
-        
-        this.input.keyboard.on('keydown-SPACE', function (event) {
-                player.setSize(32, 16);
-                playerSkin.setSize(32, 16);
-                player.body.offset.y = 22;
-                playerSkin.body.offset.y = 22;
-                player.anims.play('attack');
-                playerSkin.anims.play('attackSkin');
-                // Attack
-                if(ref.physics.overlap(ref.enemies,player, hitEntity, null, ref))
-                    console.log("WTHAT");
-
-        }); 
-        this.input.keyboard.on('keyup-SPACE', function (event) {
-                player.setSize(16, 16);
-                playerSkin.setSize(16, 16);
-                player.body.offset.y = 22;
-                playerSkin.body.offset.y=22;
-                }
-        );
-        
                 
         
-        this.input.keyboard.on('keydown-ENTER', function (event) {
+        /*this.input.keyboard.on('keydown-ENTER', function (event) {
             if(vialsT) {
                 // FUTURE - Pop up UI. Initial setup here.
                 scoreText.setVisible(false);
@@ -667,7 +728,7 @@ class InGame extends Phaser.Scene {
                 currentMapNum = (currentMapNum >= mapArray.length-1) ? 0 : currentMapNum+1;
                 //ref.scene.start('InGame');
             }
-        });
+        });*/
         
         this.input.keyboard.on('keydown-G', function (event) {   
             // GOD-MODE
@@ -679,46 +740,14 @@ class InGame extends Phaser.Scene {
         this.input.keyboard.on('keydown-ESC', function (event) {   
             panel.setVisible(false);
         });
-        
-        var lastAnim = "stand";
-        // In a clever way, to avoid doing onFloor() in the Update() 
-        // function, we have instead designated Floors as separate
-        // layers in our levels, and trigger an OnCollide event.
-        function onGround() {
-            // Short circuit if player has not changed states
-            if(player.anims.currentAnim.key == lastAnim || player.anims.currentAnim.key == "attack")
-                return;
-
-            if(cursors.right.isDown || cursors.left.isDown) {
-                //console.log("playing walk anim")
-                if(player.anims.currentAnim.key != "walk") {
-                    player.anims.play('walk');
-                    playerSkin.anims.play('walkSkin');
-                    lastAnim = "walk";
-                }
-            }
-            else {
-                //console.log("playing stand anim")
-                if(player.anims.currentAnim.key != "stand") {
-                    player.anims.play('stand');
-                    playerSkin.anims.play("standSkin");
-                    lastAnim = "stand";
-                }
-            }
-        }
 
         savedCameraPos = this.cameras.main.scrollX;
 
     }
 
     update() {
-        // All input events have been moved to INPUT EVENTS using Javascript Events
-        // Here, if we are smart enough, we don't have to put anything.
-        // Every single event should be a collision or a keypress.
 
         // PARALLAX EFFECT
-        // Unless we can figure out how to move this map on player movement-
-        // it will have to be in the Update() method
         if((player.anims.currentAnim.key == "walk" || player.anims.currentAnim.key == "jump") && savedCameraPos != this.cameras.main.scrollX) {
             if(player.flipX) {
                 this.backgroundBack.tilePositionX -= 0.05;
@@ -733,14 +762,46 @@ class InGame extends Phaser.Scene {
         }
 
 
+        // PLAYER MOVEMENT       
+        if(!player.onGround)
+            player.anims.play('jump',true);
         
-        
-        
-        
+        if(leftInput.isDown()) {
+            player.flipX = true;
+            player.setVelocityX(-5);
+            if(player.onGround&& !attackInput.isDown())
+            player.anims.play('walk',true);
+        } else if(rightInput.isDown()) {
+            player.flipX = false;
+            player.setVelocityX(5);
+            if(player.onGround&& !attackInput.isDown())
+            player.anims.play('walk',true);
+        } else {
+            player.setVelocityX(0);
+            if(player.onGround && !attackInput.isDown())
+            player.anims.play('stand');
+        }
+
+        if(jumpInput.isDown() && player.onGround) {
+            player.setVelocityY(-10);
+            player.anims.play('jump', true);
+        }
+
+        if(attackInput.isDown()) {
+            player.setSize(32, 16);
+            player.anims.play('attack',true);
+            // Attack
+            //if(this.matter.overlap(this.enemies,player, this.hitEntity, null, this))
+            //    console.log("WTHAT");
+        } else {
+            player.setSize(16, 16);
+        }
         
 
+
+
         // FUTURE - Enemy movement.
-        vialsT = this.physics.overlap(player, this.doors);
+        /*vialsT = this.matter.overlap(player, this.doors);
         if (vialsT){
             scoreText.setVisible(true);
             scoreText.x = player.x - 100;
@@ -748,12 +809,14 @@ class InGame extends Phaser.Scene {
         }
         else{
             scoreText.setVisible(false);
+        }*/
+        
+        
+        
+        
         }
-        
-        
-        
-        
-    }}
+
+    }
 
 // ACTUAL GAME START
 // The previous classes have defined the scenes,
@@ -763,13 +826,22 @@ var config = {
     width: 640,
     height: 570,
     pixelArt: true,
-    physics: {
-        default: "arcade",
-        arcade: {
-            gravity: { y: 300 },
-            debug: false
-        },
-    },
+    physics: { default: "matter", 
+    matter:{
+        debug: {
+            showBody: true,
+            showStaticBody: true
+        }
+    }},
+    plugins: {
+        scene: [
+          {
+            plugin: PhaserMatterCollisionPlugin.default, // The plugin class
+            key: "matterCollision", // Where to store in Scene.Systems, e.g. scene.sys.matterCollision
+            mapping: "matterCollision" // Where to store in the Scene, e.g. scene.matterCollision
+          }
+        ]
+      },
     scene: [
         LoadAssets,
         InGame        
