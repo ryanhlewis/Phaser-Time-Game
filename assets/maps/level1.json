@@ -290,11 +290,53 @@
          "tileheight":16,
          "tiles":[
                 {
+                 "id":1368,
+                 "objectgroup":
+                    {
+                     "draworder":"index",
+                     "id":3,
+                     "name":"",
+                     "objects":[
+                            {
+                             "height":0,
+                             "id":2,
+                             "name":"",
+                             "polygon":[
+                                    {
+                                     "x":0,
+                                     "y":0
+                                    }, 
+                                    {
+                                     "x":0.0434782608695652,
+                                     "y":15.9565217391304
+                                    }, 
+                                    {
+                                     "x":11.8260869565217,
+                                     "y":15.9565217391304
+                                    }, 
+                                    {
+                                     "x":11.9130434782609,
+                                     "y":0.173913043478261
+                                    }],
+                             "rotation":0,
+                             "type":"",
+                             "visible":true,
+                             "width":0,
+                             "x":1.95652173913043,
+                             "y":-0.0434782608695652
+                            }],
+                     "opacity":1,
+                     "type":"objectgroup",
+                     "visible":true,
+                     "x":0,
+                     "y":0
+                    }
+                }, 
+                {
                  "id":1370,
                  "objectgroup":
                     {
                      "draworder":"index",
-                     "id":5,
                      "name":"",
                      "objects":[
                             {

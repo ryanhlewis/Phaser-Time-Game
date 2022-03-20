@@ -275,9 +275,19 @@ class InGame extends Phaser.Scene {
         console.log(player.mainBody);
         player.onGround = false;
 
-        function onGround() {
-            player.onGround = true;
-            //console.log("entered ground");
+        function onGround(collision) {
+            // Detecting onGround for jumping
+            if(!collision.bodyB.isSensor)
+                player.onGround = true;
+            // Detecting sensor ladder.
+            else {
+                if(rightInput.isDown() || leftInput.isDown())
+                    player.allowGravity = true;
+                if(jumpInput.isDown()) {
+                    player.allowGravity = false;
+                    player.setVelocityY(-5);
+                }
+            }
         }
 
         function resetTouching() {
@@ -392,6 +402,12 @@ class InGame extends Phaser.Scene {
         
         //this.matter.add.collider(this.enemies, solidMap);
         solidMap.setCollisionByExclusion([-1]);
+        var hi = ladderMap.setCollisionByExclusion([-1]);
+        console.log(ladderMap);
+        console.log(hi);
+        var hey = this.matter.world.convertTilemapLayer(ladderMap, {isSensor:true,isStatic:true});
+        console.log(hey);
+        //ladderMap.body.isSensor = true;
         this.matter.world.convertTilemapLayer(solidMap);
 
 
