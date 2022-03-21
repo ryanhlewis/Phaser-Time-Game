@@ -31,7 +31,7 @@ var rightInput;
 var jumpInput;
 var attackInput;
 
-var currentMapNum = 0;
+var currentMapNum = 4;
 
 // This scene loads all game assets, and is never loaded again.
 // This is due to Phaser repeatedly calling preload() methods
@@ -43,14 +43,22 @@ class LoadAssets extends Phaser.Scene {
     preload() {
         // Player
         this.load.spritesheet('player', 'assets/spritesheets/player.png', { frameWidth: 48, frameHeight: 48 })
+
+        // Misc.
         this.load.image('vials', 'assets/tilesets/lab/vials.png');
         this.load.image('window', 'assets/icons/Card X2/Card X2.png');
         this.load.image("tiles","assets/tilesets/lab/lab.png");
         this.load.image("door","assets/maps/door.png");
+        this.load.image("elevator","assets/tilesets/lab/elevator.png");
         this.load.image("button-up","assets/tilesets/lab/button.png");
         this.load.image("button-down","assets/tilesets/lab/buttondown.png");
+        this.load.image("wrong","assets/icons/Icons/03.png");
+        this.load.image("right","assets/icons/Icons/30.png");
+        this.load.image("question","assets/icons/Icons/06.png");
+        this.load.spritesheet('portal', 'assets/tilesets/lab/portal.png',{frameWidth:500, frameHeight: 500})
+        this.load.spritesheet('scientist', 'assets/spritesheets/scientist.png',{frameWidth:190, frameHeight: 285})
+
         this.load.tilemapTiledJSON('map',"assets/maps/tilemap.json");
-        this.load.spritesheet('skin', 'assets/spritesheets/skin.png', { frameWidth: 48, frameHeight: 48 })
         
         // Tiles
         this.load.image("lab-tiles","assets/tilesets/lab/lab.png");
@@ -138,7 +146,7 @@ class InGame extends Phaser.Scene {
         // The naming system is consistently enforced-
         // mapname-tiles, mapname-back, etc.
         class Map {
-            constructor(name,offset1,offset2,offset3,scale) {
+            constructor(name,offset1,offset2,offset3,scale, playerSpawnX, playerSpawnY) {
                 this.name = name;
                 this.back1 = name + "-back";
                 this.back2 = name  + "-middle";
@@ -149,6 +157,8 @@ class InGame extends Phaser.Scene {
                 this.offset2 = offset2;
                 this.offset3 = offset3;
                 this.scale = scale;
+                this.playerSpawnX = (playerSpawnX === undefined) ? 0 : playerSpawnX;
+                this.playerSpawnY = (playerSpawnY === undefined) ? 0 : playerSpawnY;
             }
         }
         const mapArray = [
@@ -156,10 +166,10 @@ class InGame extends Phaser.Scene {
             new Map("forest",500,500,600, 4),
             new Map("swamp",-20,200,700, 4),
             new Map("industrial",400,600,600, 2.4),
-            new Map("level1",400,600,600, 2.4),
-            new Map("level2",400,600,825, 3)
+            new Map("level1",400,600,600, 2.4, 600,600),
+            new Map("level2",400,600,825, 3, 4000, 0)
         ]
-        var currentMap = mapArray[4];
+        var currentMap = mapArray[currentMapNum];
 
 
         // BACKGROUNDS
@@ -199,21 +209,8 @@ class InGame extends Phaser.Scene {
         const doorMap = map.createLayer("Door", tileset, 0, 200);
         const ladderMap = map.createLayer("Ladder", tileset, 0, 200);
         
-        this.doors = [];
-        var doorArray = map.getObjectLayer('Doors').objects;
-        for(var i = 0; i < doorArray.length; i++) {
-            var doorObject = this.matter.add.image(doorArray[i].x*3, doorArray[i].y*3 + 155 - doorArray[i].height, 'door').setScale(3,3);
-            doorObject.body.isSensor = true;
-            doorObject.body.isStatic = true;
-            this.doors.push(doorObject);
-            // Attach door link
-            if(i % 2 == 0 && i != doorArray.length-1) {
-                doorObject.setData('teleport', [doorArray[i+1].x*3,doorArray[i+1].y*3 + 155]  );
-            } else {
-                doorObject.setData('teleport', [doorArray[i-1].x*3,doorArray[i-1].y*3 + 155]  );
-            }
-        }
-        
+
+        const { Body, Bodies } = Phaser.Physics.Matter.Matter; // Native Matter modules
         
         //vials = this.matter.add.staticGroup();
         //var cabinet = vials.create(430, 1065, 'vials').setScale(3,3);
@@ -229,12 +226,7 @@ class InGame extends Phaser.Scene {
         ladderMap.setScale(3,3);
         solidMap.setSize(300,3);
         
-        //Text
-        this.add.text(345, 875, 'Use the right and\nleft arrow keys\nto move.\n\nUse the up arrow\nkey to jump.', { fontSize: '32px', fill: '#FFFFFF' });
-        this.add.text(1135, 975, 'To Interact', { fontSize: '32px', fill: '#FFFFFF' });
-        this.add.text(3850, 2400, 'Press Space to attack.', { fontSize: '32px', fill: '#FFFFFF' });
-        
-
+ 
 
         player = this.matter.add.sprite(400, 900, 'player');
         console.log(player);
@@ -250,7 +242,6 @@ class InGame extends Phaser.Scene {
         player.setOrigin(0.5,0.28);
         player.body.centerOffset.y = 22;
 
-        const { Body, Bodies } = Phaser.Physics.Matter.Matter; // Native Matter modules
         const { width: w, height: h } = player;
         player.mainBody = Bodies.rectangle(0,0, w * 2, h*3, {
           chamfer: { radius: 10 }
@@ -312,7 +303,158 @@ class InGame extends Phaser.Scene {
 
         player.setExistingBody(compoundBody).setFixedRotation();
         
+        player.x = currentMap.playerSpawnX;
+        player.y = currentMap.playerSpawnY;
+
+
         
+        // FUTURE- These are VERY similar functions for getting objects.
+        // Write a method to automatically do most of the work.
+
+        this.doors = [];
+        var doorArray = [];
+        try {
+            doorArray = map.getObjectLayer('Doors').objects;
+        } catch (e) {
+            console.log("No doors in this map.");
+        }
+        for(var i = 0; i < doorArray.length; i++) {
+            var doorObject = this.matter.add.image(doorArray[i].x*3, doorArray[i].y*3 + 155 - doorArray[i].height, 'door').setScale(3,3);
+            doorObject.body.isSensor = true;
+            doorObject.body.isStatic = true;
+            this.doors.push(doorObject);
+            // Attach door link
+            if(i % 2 == 0 && i != doorArray.length-1) {
+                doorObject.setData('teleport', [doorArray[i+1].x*3,doorArray[i+1].y*3 + 155]  );
+            } else {
+                doorObject.setData('teleport', [doorArray[i-1].x*3,doorArray[i-1].y*3 + 155]  );
+            }
+        }
+
+        this.elevators = [];
+        var elevatorArray = [];
+        var elevatorInteracting = false;
+        try {
+            elevatorArray = map.getObjectLayer('Elevators').objects;
+        } catch (e) {
+            console.log("No elevators in this map.");
+        }
+        for(var i = 0; i < elevatorArray.length; i++) {
+            var elevatorObject = this.matter.add.image(0,0, 'elevator').setScale(3,3);
+            // Recreate door collider
+            var { width: ew, height: eh } = elevatorObject;
+            var mainBody = Bodies.rectangle(0,0, ew * 2, eh*0.9, {
+                  chamfer: { radius: 10 },
+            });
+            var upperBody = Bodies.rectangle(0,-280, ew * 2, eh*0.5, {
+                chamfer: { radius: 10 },
+            });
+            var interactBody = Bodies.rectangle(0,-50, ew * 0.5, eh*0.5, {
+                isSensor: true
+            });
+            var cB = Body.create({
+                  parts: [
+                    mainBody,
+                    upperBody,
+                    interactBody
+                  ],
+                  frictionStatic: 0,
+                  frictionAir: 0,
+                  friction: 0,
+                  // The offset here allows us to control where the sprite is placed relative to the
+                  // matter body's x and y - here we want the sprite centered over the matter body.
+                  // Overwritten by future setOrigin..
+                  render: { sprite: { xOffset: 0.5, yOffset: 0.5 } }
+            });
+            elevatorObject.setExistingBody(cB).setFixedRotation();
+            elevatorObject.x = elevatorArray[i].x*3;
+            elevatorObject.y = elevatorArray[i].y*3 + 155 - elevatorArray[i].height;
+            elevatorObject.setOrigin(0.5,0.6);
+            elevatorObject.active = false;
+            elevatorObject.body.allowGravity = false;
+            elevatorObject.body.isStatic = true;
+            console.log(elevatorObject);
+            elevatorObject.target = elevatorObject.y - elevatorArray[i].properties[0].value;
+            elevatorObject.down = false;
+            elevatorObject.number = i;
+            this.elevators.push(elevatorObject);
+            if(elevatorArray[i].properties[0].value < 0) 
+                elevatorObject.down = true;
+
+            this.matterCollision.addOnCollideActive({
+                objectA: player.bottom,
+                objectB: elevatorObject,
+                callback: elevatorInteract,
+                context: this
+              });
+
+            this.matterCollision.addOnCollideEnd({
+                objectA: player.bottom,
+                objectB: elevatorObject,
+                callback: elevatorLeave,
+                context: this
+              });
+
+            this.elevators.push(elevatorObject);
+        }
+
+        function elevatorLeave() {
+            scoreText.setVisible(false);
+        }
+
+        function elevatorInteract(collision) {
+            if(elevatorInteracting)
+                return;
+            if(collision.gameObjectB.active) {
+                scoreText.x = player.x - 100;
+                scoreText.y = player.y + 50;
+                scoreText.setVisible(true);
+                if(EnterKey.isDown) {
+                    if(!elevatorInteracting) {
+                        elevatorMove(collision.gameObjectB);
+                        scoreText.setVisible(false);
+                        elevatorInteracting = true;
+                    }
+                    //collision.gameObjectB.setVelocityY(-5);
+                }
+            }
+        }
+
+        var chosenElevator;
+
+        async function elevatorMove(elevatorObject){ 
+            chosenElevator = elevatorObject;
+        }    
+
+        this.events.on("update", checkElevator, this);
+        function checkElevator() {
+            if(!elevatorInteracting)
+                return;
+            if(chosenElevator.down)
+                if(chosenElevator.target > chosenElevator.y)
+                    chosenElevator.y++;
+                else {
+                    elevatorInteracting = false;
+                    console.log(chosenElevator.target);
+                    console.log(chosenElevator.y);
+                    chosenElevator.target = chosenElevator.y + elevatorArray[chosenElevator.number].properties[0].value;
+                    chosenElevator.down = false;
+                    console.log(chosenElevator);
+                }
+            else
+                if(chosenElevator.target < chosenElevator.y)
+                    chosenElevator.y--;
+                else {
+                    elevatorInteracting = false;
+                    console.log(chosenElevator.target);
+                    console.log(chosenElevator.y);
+                    chosenElevator.target = chosenElevator.y - elevatorArray[chosenElevator.number].properties[0].value;
+                    chosenElevator.down = true;
+                    console.log(chosenElevator);
+                }
+        }
+
+
         async function enemyrun(pumpkin){ 
                   
             //pumpkin.body.collideWorldBounds = true; 
@@ -362,9 +504,11 @@ class InGame extends Phaser.Scene {
             for(var i = 0; i < enemyArray.length; i++) {
                 //var enemy = this.matter.add.sprite(player.x + 50, player.y + 50,'pumpkin-dude').setScale(3,3);
                 //enemyrun(enemy);
-                var enemy = this.matter.add.sprite(0,0,'pumpkin-dude').setScale(3,3);
+                var enemySprite = enemyArray[i].properties[0].value;
+                var scale = enemyArray[i].properties[1].value;
+                var enemy = this.matter.add.sprite(0,0,enemySprite).setScale(scale,scale);
                 var { width: ew, height: eh } = enemy;
-                const mainBody = Bodies.rectangle(0,0, ew * 2, eh*1.5, {
+                const mainBody = Bodies.rectangle(0,0, ew * (scale * (0.66)), eh*(scale * 0.5), {
                   chamfer: { radius: 10 }
                 });
                 var cB = Body.create({
@@ -384,6 +528,8 @@ class InGame extends Phaser.Scene {
                 enemy.y = enemyArray[i].y*3 + 155 - enemyArray[i].height;
 
                 this.enemies.push(enemy);
+                enemy.enemySprite = enemySprite;
+
                 //console.log(enemy.x + " " + enemy.y);
                 //console.log(player.x + " " + player.y);
                 enemy.setOrigin(0.5,0.6);
@@ -400,18 +546,12 @@ class InGame extends Phaser.Scene {
         player.setData('Player', Boolean(1));
 
         
-        //this.matter.add.collider(this.enemies, solidMap);
         solidMap.setCollisionByExclusion([-1]);
-        var hi = ladderMap.setCollisionByExclusion([-1]);
-        console.log(ladderMap);
-        console.log(hi);
-        var hey = this.matter.world.convertTilemapLayer(ladderMap, {isSensor:true,isStatic:true});
-        console.log(hey);
-        //ladderMap.body.isSensor = true;
+        ladderMap.setCollisionByExclusion([-1]);
+        this.matter.world.convertTilemapLayer(ladderMap, {isSensor:true,isStatic:true});
         this.matter.world.convertTilemapLayer(solidMap);
 
 
-       // this.matter.add.collider(this.enemies, player, hitEntity, null, this);
         
         //display health
         var txt = this.add.text(0, 0, '100');
@@ -551,12 +691,20 @@ class InGame extends Phaser.Scene {
         //BUTTON EVENT
         this.buttons = [];
         var buttonArray = [];
+        var buttonDisplay;
+        var answerCount = 0;
+        var puzzleBeat = false;
         try {
         buttonArray = map.getObjectLayer('Buttons').objects;
         } catch(e) {
             console.log("No buttons in this map.");
         }
         for(var i = 0; i < buttonArray.length; i++) {
+            if(Math.floor(buttonArray.length / 2) == i) {
+                // Spawn button display
+                console.log("spawned display");
+                buttonDisplay = this.add.image(buttonArray[i].x*3, buttonArray[i].y*3 - 20 - buttonArray[i].height, 'question').setScale(3,3);
+            }
             //console.log(buttonArray[0]);
             var buttonObject = this.matter.add.image(buttonArray[i].x*3, buttonArray[i].y*3 + 200 - buttonArray[i].height, 'button-up').setScale(3,3);
             buttonObject.body.isStatic = true;
@@ -578,7 +726,20 @@ class InGame extends Phaser.Scene {
         function buttonPress(collision) {
             var button = collision.gameObjectB;
             //console.log(button);
-            
+                
+            if(answerCount >= buttonArray.length * buttonArray.length) {
+                console.log("Puzzle solved");
+                buttonDisplay.setTexture('right');
+                // execute a win function- beware, it will execute multiple times here---
+                if(!puzzleBeat) {
+                    puzzleBeat = true;
+                    // WON THE PUZZLE-
+                    this.elevators[0].active = true;
+                }
+                return;
+            } else 
+                buttonDisplay.setTexture('question');
+                
                 button.setSize(50,25);
                 button.setTexture('button-down');
                 //console.log("on botton");
@@ -595,6 +756,8 @@ class InGame extends Phaser.Scene {
                             resetAllButtons();
                         } else {
                             console.log("You clicked the right button.");
+                            answerCount++;
+                            //buttonDisplay.setTexture('question');
                         }
                     }
                     button.setData('isDown', true);
@@ -607,6 +770,7 @@ class InGame extends Phaser.Scene {
                 var compareButton = ref.buttons[i];
                 buttonReset(compareButton);
             }
+            answerCount = 0;
         }
         async function buttonReset(button) {
             await new Promise((r) =>
@@ -616,6 +780,7 @@ class InGame extends Phaser.Scene {
                         button.setSize(50,50);
                         button.setData('isDown', false);
                         button.setTexture('button-up');
+                        buttonDisplay.setTexture('wrong');
                         if(ref.matter.overlap(player, button)) {
                             player.setVelocityY(-20);
                         } 
@@ -650,7 +815,12 @@ class InGame extends Phaser.Scene {
         });
         
         
-        
+        this.anims.create({
+            key: 'portalPlay',
+            frames: this.anims.generateFrameNumbers('portal', { start: 0, end: 23 }),
+            frameRate: 100,
+            repeat: -1
+        });
         
 
         this.cameras.main.startFollow(player);
@@ -712,11 +882,6 @@ class InGame extends Phaser.Scene {
             new Anim('walk',10,-1,'player',6,11),
             new Anim('jump',1,-1,'player',16,17),
             new Anim('attack',10,0,'player',12,15),
-            new Anim('standSkin',1,-1,'skin',0,0),
-            new Anim('walkSkin',10,-1,'skin',6,11),
-            new Anim('jumpSkin',1,-1,'skin',16,17),
-            new Anim('attackSkin',10,0,'skin',12,15),
-            new Anim('enemywalk',10,-1,'pumpkin-dude',0,7)
         ];
 
         animations.forEach(anim => { 
@@ -726,11 +891,13 @@ class InGame extends Phaser.Scene {
         // Create a start animation for our player.
         player.anims.play("stand");
 
-
         this.enemies.forEach(enemy => {
-            enemy.anims.play("enemywalk");
+            // Grab enemy animation
+            if(!enemy.anims.animationManager.anims.entries.hasOwnProperty(enemy.enemySprite))
+                addAnimation(new Anim(enemy.enemySprite,10,-1,enemy.enemySprite,0,7));
+        
+            enemy.anims.play(enemy.enemySprite);
         });
-        //enemy.anims.play("enemywalk");
                 
         
         /*this.input.keyboard.on('keydown-ENTER', function (event) {
@@ -745,11 +912,14 @@ class InGame extends Phaser.Scene {
                 //ref.scene.start('InGame');
             }
         });*/
-        
+        var tempCol;
         this.input.keyboard.on('keydown-G', function (event) {   
             // GOD-MODE
             godMode = !godMode;
             player.body.allowGravity = godMode;
+            if(godMode)
+                tempCol = player.body.collisionFilter;
+            player.body.collisionFilter = (godMode ? {} : tempCol);
             console.log("Godmode has been " + (godMode ? "enabled" : "disabled") );
         });
 
@@ -758,6 +928,37 @@ class InGame extends Phaser.Scene {
         });
 
         savedCameraPos = this.cameras.main.scrollX;
+
+
+
+
+        // MISC
+        // Future- special map modifiers
+        if(currentMap == mapArray[4]) {
+            this.add.text(345, 875, 'Use the right and\nleft arrow keys\nto move.\n\nUse the up arrow\nkey to jump.', { fontSize: '32px', fill: '#FFFFFF' });
+            this.add.text(1135, 975, 'To Interact', { fontSize: '32px', fill: '#FFFFFF' });
+            this.add.text(3850, 2400, 'Press Space to attack.', { fontSize: '32px', fill: '#FFFFFF' });
+            this.add.text(3550, 1990, 'Interact with the environment\n to solve puzzles.', { fontSize: '32px', fill: '#FFFFFF' });
+            this.add.text(495, 2150, 'Why did you kill all\n those scientists?!\n It\'s overheating!', { fontSize: '32px', fill: '#FFFFFF' });
+            var portal = this.matter.add.sprite(295,1810, 'portal').setScale(0.6,1.08);
+            portal.body.isSensor = true;
+            portal.body.isStatic = true;
+            portal.setDepth(-10);
+            portal.anims.play("portalPlay");
+
+            this.matterCollision.addOnCollideActive({
+                objectA: player.bottom,
+                objectB: portal.body,
+                callback: portalEnter,
+                context: this
+            });
+            function portalEnter() {
+                currentMapNum = 5;
+                this.scene.restart();
+            }
+        }
+
+        
 
     }
 
@@ -845,8 +1046,8 @@ var config = {
     physics: { default: "matter", 
     matter:{
         debug: {
-            showBody: true,
-            showStaticBody: true
+            showBody: false,
+            showStaticBody: false
         }
     }},
     plugins: {
