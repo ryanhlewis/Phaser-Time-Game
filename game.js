@@ -30,6 +30,7 @@ var leftInput;
 var rightInput;
 var jumpInput;
 var attackInput;
+var healthLevel = 0;
 
 var currentMapNum = 4;
 
@@ -43,7 +44,12 @@ class LoadAssets extends Phaser.Scene {
     preload() {
         // Player
         this.load.spritesheet('player', 'assets/spritesheets/player.png', { frameWidth: 48, frameHeight: 48 })
-
+        
+        // Hearts
+        this.load.image('hearts-full', 'assets/icons/hearts-full.png');
+        this.load.image('hearts-empty', 'assets/icons/hearts-empty.png');
+        this.load.image('hearts-half', 'assets/icons/hearts-half.png');
+        
         // Misc.
         this.load.image('vials', 'assets/tilesets/lab/vials.png');
         this.load.image('window', 'assets/icons/Card X2/Card X2.png');
@@ -167,7 +173,7 @@ class InGame extends Phaser.Scene {
             new Map("swamp",-20,200,700, 4),
             new Map("industrial",400,600,600, 2.4),
             new Map("level1",400,600,600, 2.4, 600,600),
-            new Map("level2",400,600,825, 3, 4000, 0)
+            new Map("level2",400,600,725, 3, 4200, 400)
         ]
         var currentMap = mapArray[currentMapNum];
 
@@ -554,9 +560,30 @@ class InGame extends Phaser.Scene {
 
         
         //display health
-        var txt = this.add.text(0, 0, '100');
-        txt.setScrollFactor(0);
-        
+        //var txt = this.add.text(0, 0, '100');
+        //txt.setScrollFactor(0);
+
+
+        var healthbar = this.add.group();
+
+        // Player starts with 3 hearts.
+        // Each are evenly spaced apart, starting at 30,
+        // with a width of 50. They are accessed by the hearts array.
+        var hearts = Array();
+        function createHeart() {
+
+            var heart = healthbar.create(40 + hearts.length*60,30, 'hearts-full');
+
+            heart.setScale(3.2, 3.2);
+            hearts.push(heart);
+            heart.setScrollFactor(0);
+        };
+
+        for (let i = 0; i < healthLevel + 3; i++) {
+            createHeart();
+        }
+
+
         var SpaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
 
 
@@ -573,7 +600,28 @@ class InGame extends Phaser.Scene {
                             
             if(entity.getData("Player")) {
                 health-=10;
-                txt.text = health;
+                //txt.text = health;
+
+                // First, choose the right heart to act on-
+                var divider = 100 / hearts.length;
+                // Need to work this out to work with "bigger health hits".
+                var chosenIndex = Math.floor(hearts.length * ((health + 10) / 100.0));
+                // Math might be a little off- fix later
+                if (chosenIndex >= hearts.length) chosenIndex = hearts.length - 1;
+
+                if (health < chosenIndex * divider + divider / 2) {
+                    hearts[chosenIndex].setTexture('hearts-half');
+                }
+                if (health <= chosenIndex * divider) {
+                    hearts[chosenIndex].setTexture('hearts-empty');
+                }
+
+
+                if(health <= 0) {
+                    // Scene reset variables
+                    health = 100;
+                    this.scene.restart();
+                }
 
             } else {
                 entity.setData("health",entity.getData("health")-10);
@@ -672,6 +720,7 @@ class InGame extends Phaser.Scene {
                 player.x = collision.gameObjectB.getData('teleport')[0];
                 player.y = collision.gameObjectB.getData('teleport')[1];
                 this.cameras.main.startFollow(player);
+                this.cameras.main.midPoint.y = player.y + 300;
                 doorReset();
             }
         }
@@ -954,6 +1003,8 @@ class InGame extends Phaser.Scene {
             });
             function portalEnter() {
                 currentMapNum = 5;
+                // Scene reset variables
+                health = 100;
                 this.scene.restart();
             }
         }
@@ -980,7 +1031,7 @@ class InGame extends Phaser.Scene {
 
 
         // PLAYER MOVEMENT       
-        if(!player.onGround)
+        if(!player.onGround && !attackInput.isDown())
             player.anims.play('jump',true);
         
         if(leftInput.isDown()) {
@@ -1005,13 +1056,7 @@ class InGame extends Phaser.Scene {
         }
 
         if(attackInput.isDown()) {
-            player.setSize(32, 16);
             player.anims.play('attack',true);
-            // Attack
-            //if(this.matter.overlap(this.enemies,player, this.hitEntity, null, this))
-            //    console.log("WTHAT");
-        } else {
-            player.setSize(16, 16);
         }
         
 
