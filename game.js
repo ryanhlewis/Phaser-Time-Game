@@ -988,12 +988,13 @@ class InGame extends Phaser.Scene {
             this.add.text(1135, 975, 'To Interact', { fontSize: '32px', fill: '#FFFFFF' });
             this.add.text(3850, 2400, 'Press Space to attack.', { fontSize: '32px', fill: '#FFFFFF' });
             this.add.text(3550, 1990, 'Interact with the environment\n to solve puzzles.', { fontSize: '32px', fill: '#FFFFFF' });
-            this.add.text(495, 2150, 'Why did you kill all\n those scientists?!\n It\'s overheating!', { fontSize: '32px', fill: '#FFFFFF' });
+            this.add.text(495, 2150, 'Why did you kill all\n those scientists?!\n The time machine\n is overheating!', { fontSize: '32px', fill: '#FFFFFF' });
             var portal = this.matter.add.sprite(295,1810, 'portal').setScale(0.6,1.08);
             portal.body.isSensor = true;
             portal.body.isStatic = true;
             portal.setDepth(-10);
             portal.anims.play("portalPlay");
+            this.cameras.main.setBackgroundColor('0x808080');
 
             this.matterCollision.addOnCollideActive({
                 objectA: player.bottom,
