@@ -38,7 +38,7 @@ var poweruplevel = 0;
 
 
 
-var currentMapNum = 4;
+var currentMapNum = 0;
 
 // This scene loads all game assets, and is never loaded again.
 // This is due to Phaser repeatedly calling preload() methods
@@ -133,9 +133,8 @@ class InGame extends Phaser.Scene {
         
         
         //  Load the Google WebFont Loader script
-        game.load.script('webfont', '//ajax.googleapis.com/ajax/libs/webfont/1.4.7/webfont.js');
                 
-        WebFontConfig = {
+        /*WebFontConfig = {
 
             active: function() { game.time.events.add(Phaser.Timer.SECOND, createText, this); },
 
@@ -143,7 +142,7 @@ class InGame extends Phaser.Scene {
             families: ['Revalia']
             }
 
-        };
+        };*/
 
     }
     
@@ -598,24 +597,29 @@ class InGame extends Phaser.Scene {
         
         var powerupbar = this.add.group();
                 
-        this.powerups = [];
+        var powerups = [];
         var powerupArray = [];
         
         
         var cup = this.matter.add.image(500 + powerups.length*50, 30,'powerup-cup').setScale(3.2,3.2);
         var potion = this.matter.add.image(500 + powerups.length*50, 30, 'powerup-potion').setScale(3.2,3.2);
-        var shield = this.matter.add.image(500 + powerups.length*50, 30, 'powerup-shield').setScale(3.2,3.2);    
+        var shield = this.matter.add.image(500 + powerups.length*50, 30, 'powerup-shield').setScale(3.2,3.2);  
         
-        cup.type = "double-jump";
-        potion.type = "double-jump";
-        shield.type = "double-jump";
+        powerups.push(cup);
+        powerups.push(potion);
+        powerups.push(shield);
+
+        cup.type = "powerup-cup";
+        potion.type = "powerup-potion";
+        shield.type = "powerup-shield";
         
         
         function createPowerUp(collision){
             
-            addPowerup(collision.gameObjectB.type);
-            
-            var powerup = powerupbar.create(500 + powerups.length*50, 30, collision.gameObjectB);
+            //addPowerup(collision.gameObjectB.type);
+            collision.gameObjectB.destroy();
+            var powerup = powerupbar.create(750 - powerups.length*50, 30, collision.gameObjectB.type);
+            console.log(collision.gameObjectB.type);
             powerup.setScale(3.2, 3.2);
             powerups.push(powerup);
             powerup.setScrollFactor(0);  
@@ -625,8 +629,8 @@ class InGame extends Phaser.Scene {
         
         this.matterCollision.addOnCollideActive({
             objectA: player,
-            objectB: this.powerups,
-            callback: addPowerup,
+            objectB: powerups,
+            callback: createPowerUp,
             context: this
         });
         
@@ -1075,7 +1079,7 @@ class InGame extends Phaser.Scene {
         
         function backInTime() {
             health = 100;
-            scene.restart();
+            ref.scene.restart();
         }
         
         this.input.keyboard.on('keydown-B', function (event) {   
@@ -1091,7 +1095,7 @@ class InGame extends Phaser.Scene {
 
         // MISC
         // Future- special map modifiers
-        if(currentMap == mapArray[4]) {
+        if(currentMap == mapArray[0]) {
             this.add.text(345, 875, 'Use the right and\nleft arrow keys\nto move.\n\nUse the up arrow\nkey to jump.', { fontSize: '32px', fill: '#FFFFFF', font: 'Revalia' });
             this.add.text(1135, 975, 'To Interact', { fontSize: '32px', fill: '#FFFFFF', font: 'Revalia' });
             this.add.text(3850, 2400, 'Press Space to attack.', { fontSize: '32px', fill: '#FFFFFF' , font: 'Revalia'});
