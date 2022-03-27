@@ -281,6 +281,8 @@ class InGame extends Phaser.Scene {
         player.y = currentMap.playerSpawnY;
 
 
+        player.setDepth(5);
+
         
         // FUTURE- These are VERY similar functions for getting objects.
         // Write a method to automatically do most of the work.
@@ -351,6 +353,7 @@ class InGame extends Phaser.Scene {
             elevatorObject.target = elevatorObject.y - elevatorArray[i].properties[0].value;
             elevatorObject.down = false;
             elevatorObject.number = i;
+            elevatorObject.setDepth(10);
             this.elevators.push(elevatorObject);
             if(elevatorArray[i].properties[0].value < 0) 
                 elevatorObject.down = true;
@@ -717,12 +720,43 @@ class InGame extends Phaser.Scene {
                 buttonDisplay = this.add.image(buttonArray[i].x*3, buttonArray[i].y*3 - 20 - buttonArray[i].height, 'question').setScale(3,3);
             }
             //console.log(buttonArray[0]);
-            var buttonObject = this.matter.add.image(buttonArray[i].x*3, buttonArray[i].y*3 + 200 - buttonArray[i].height, 'button-up').setScale(3,3);
-            buttonObject.body.isStatic = true;
-            this.buttons.push(buttonObject);
-            buttonObject.setSize(50,50);
-            buttonObject.setData('order', buttonArray[i].properties[0].value);
-            buttonObject.setData('isDown', false);
+            //var buttonObject = this.matter.add.image(buttonArray[i].x*3, buttonArray[i].y*3 + 200 - buttonArray[i].height, 'button-up').setScale(3,3);
+            
+            var button = this.matter.add.sprite(0,0,'button-up').setScale(3,3);
+            var { width: ew, height: eh } = button;
+            var mainBody = Bodies.rectangle(0,0, ew * (scale * (4.66)), eh*(scale * 4.5), {
+              //chamfer: { radius: 10 }
+            });
+            var sideBody = Bodies.polygon(-20,3, 3, 10, {
+                //chamfer: { radius: 10 }
+              });
+            var sideBody1 = Bodies.polygon(20,3, 3, -10, {
+                //chamfer: { radius: 10 }
+              });
+            var cB = Body.create({
+              parts: [
+                mainBody,
+                sideBody,
+                sideBody1
+              ],
+              frictionStatic: 0,
+              frictionAir: 0,
+              friction: 0,
+              // The offset here allows us to control where the sprite is placed relative to the
+              // matter body's x and y - here we want the sprite centered over the matter body.
+              // Overwritten by future setOrigin..
+              render: { sprite: { xOffset: 0.5, yOffset: 0.5 } }
+            });
+            button.setExistingBody(cB).setFixedRotation();
+            button.setOrigin(0.5,0.6);
+            button.x = buttonArray[i].x*3;
+            button.y = buttonArray[i].y*3 + 200 - buttonArray[i].height;
+            button.body.isStatic = true;
+            button.setDepth(1);
+            this.buttons.push(button);
+            //buttonObject.setSize(50,50);
+            button.setData('order', buttonArray[i].properties[0].value);
+            button.setData('isDown', false);
             //console.log(buttonObject);
         }
         //this.matter.add.collider(player, this.buttons,buttonPress,null,this);
@@ -1056,8 +1090,8 @@ var config = {
     physics: { default: "matter", 
     matter:{
         debug: {
-            showBody: false,
-            showStaticBody: false
+            showBody: true,
+            showStaticBody: true
         }
     }},
     plugins: {
