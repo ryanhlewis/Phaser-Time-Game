@@ -26,7 +26,19 @@ var jumpInput;
 var attackInput;
 var healthLevel = 0;
 
-var currentMapNum = 0;
+
+
+
+
+var powerup = 100;
+var poweruplevel = 0;
+
+
+
+
+
+
+var currentMapNum = 4;
 
 // This scene loads all game assets, and is never loaded again.
 // This is due to Phaser repeatedly calling preload() methods
@@ -43,6 +55,12 @@ class LoadAssets extends Phaser.Scene {
         this.load.image('hearts-full', 'assets/icons/hearts-full.png');
         this.load.image('hearts-empty', 'assets/icons/hearts-empty.png');
         this.load.image('hearts-half', 'assets/icons/hearts-half.png');
+        
+        
+        //powerups
+        this.load.image('powerup-cup', 'assets/powerups/cup.png');
+        this.load.image('powerup-potion', 'assets/powerups/potion.png');
+        this.load.image('powerup-shield', 'assets/powerups/shield.png');
         
         // Misc.
         this.load.image("tiles","assets/tilesets/lab/lab.png");
@@ -84,6 +102,8 @@ class LoadAssets extends Phaser.Scene {
 }
 
 
+
+
 // FUTURE- A class to handle Main Menu, and Level Selection.
 
 // This scene handles all In-Game activities, from displayin
@@ -96,6 +116,8 @@ class InGame extends Phaser.Scene {
         super("InGame");
     }
 
+    
+    
     preload() {
         // Plugins
         this.load.scenePlugin('Slopes', 'phaser-slopes.min.js');
@@ -107,10 +129,23 @@ class InGame extends Phaser.Scene {
         rightInput = new MultiKey(this, [RIGHT, D]);
         jumpInput = new MultiKey(this, [UP, W]);
         attackInput = new MultiKey(this, [SPACE]);
+        
+        
+        
+        //  Load the Google WebFont Loader script
+        game.load.script('webfont', '//ajax.googleapis.com/ajax/libs/webfont/1.4.7/webfont.js');
+                
+        WebFontConfig = {
+
+            active: function() { game.time.events.add(Phaser.Timer.SECOND, createText, this); },
+
+            google: {
+            families: ['Revalia']
+            }
+
+        };
 
     }
-    
-    
     
 
     create() {
@@ -553,11 +588,75 @@ class InGame extends Phaser.Scene {
         for (let i = 0; i < healthLevel + 3; i++) {
             createHeart();
         }
+        
+        
+        
+        
+        
+        
+        
+        
+        var powerupbar = this.add.group();
+                
+        this.powerups = [];
+        var powerupArray = [];
+        
+        
+        var cup = this.matter.add.image(500 + powerups.length*50, 30,'powerup-cup').setScale(3.2,3.2);
+        var potion = this.matter.add.image(500 + powerups.length*50, 30, 'powerup-potion').setScale(3.2,3.2);
+        var shield = this.matter.add.image(500 + powerups.length*50, 30, 'powerup-shield').setScale(3.2,3.2);    
+        
+        cup.type = "double-jump";
+        potion.type = "double-jump";
+        shield.type = "double-jump";
+        
+        
+        function createPowerUp(collision){
+            
+            addPowerup(collision.gameObjectB.type);
+            
+            var powerup = powerupbar.create(500 + powerups.length*50, 30, collision.gameObjectB);
+            powerup.setScale(3.2, 3.2);
+            powerups.push(powerup);
+            powerup.setScrollFactor(0);  
+            
+        };
+        
+        
+        this.matterCollision.addOnCollideActive({
+            objectA: player,
+            objectB: this.powerups,
+            callback: addPowerup,
+            context: this
+        });
+        
+        
+        
+
+
+    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
 
 
         var SpaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
 
 
+        
         this.hitEntity = async function(collision){
 
             var entity = collision.gameObjectA;
@@ -651,6 +750,10 @@ class InGame extends Phaser.Scene {
             });
 
 
+        
+        
+        
+        
         // Player collider has been created- put all collisions here.
         this.matterCollision.addOnCollideActive({
             objectA: player.mainBody,
@@ -885,7 +988,7 @@ class InGame extends Phaser.Scene {
           });*/
         
         // Overlap
-        scoreText = this.add.text(0, 0, 'Press Enter', { fontSize: '32px', fill: '#FFFFFF' });
+        scoreText = this.add.text(0, 0, 'Press Enter', { fontSize: '32px', fill: '#FFFFFF', font:'Revalia' });
         scoreText.setVisible(false);
         timeText = this.add.text(0, 0, 'Press B to go\nback in time...', { fontSize: '32px', fill: '#FFFFFF' });
         timeText.setVisible(false);
@@ -988,12 +1091,12 @@ class InGame extends Phaser.Scene {
 
         // MISC
         // Future- special map modifiers
-        if(currentMap == mapArray[0]) {
-            this.add.text(345, 875, 'Use the right and\nleft arrow keys\nto move.\n\nUse the up arrow\nkey to jump.', { fontSize: '32px', fill: '#FFFFFF' });
-            this.add.text(1135, 975, 'To Interact', { fontSize: '32px', fill: '#FFFFFF' });
-            this.add.text(3850, 2400, 'Press Space to attack.', { fontSize: '32px', fill: '#FFFFFF' });
-            this.add.text(3550, 1990, 'Interact with the environment\n to solve puzzles.', { fontSize: '32px', fill: '#FFFFFF' });
-            this.add.text(495, 2150, 'You found the\ntime machine!', { fontSize: '32px', fill: '#FFFFFF' });
+        if(currentMap == mapArray[4]) {
+            this.add.text(345, 875, 'Use the right and\nleft arrow keys\nto move.\n\nUse the up arrow\nkey to jump.', { fontSize: '32px', fill: '#FFFFFF', font: 'Revalia' });
+            this.add.text(1135, 975, 'To Interact', { fontSize: '32px', fill: '#FFFFFF', font: 'Revalia' });
+            this.add.text(3850, 2400, 'Press Space to attack.', { fontSize: '32px', fill: '#FFFFFF' , font: 'Revalia'});
+            this.add.text(3550, 1990, 'Interact with the environment\n to solve puzzles.', { fontSize: '32px', fill: '#FFFFFF', font: 'Revalia' });
+            this.add.text(495, 2150, 'You found the\ntime machine!', { fontSize: '32px', fill: '#FFFFFF', font: 'Revalia' });
             var portal = this.matter.add.sprite(290,1950, 'portal').setScale(2,2);
             portal.body.isSensor = true;
             portal.body.isStatic = true;
