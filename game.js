@@ -6,18 +6,12 @@ import MultiKey from "./multikey.js";
 
 // Global Variables
 // TODO - Try to keep these to a minimum.
-
-
-
-
-
-
-
 var player;
 var cursors;
 
 var vials;
 var scoreText;
+var timeText;
 var vialsT;
 var panel;
 var savedCameraPos;
@@ -32,7 +26,7 @@ var jumpInput;
 var attackInput;
 var healthLevel = 0;
 
-var currentMapNum = 4;
+var currentMapNum = 0;
 
 // This scene loads all game assets, and is never loaded again.
 // This is due to Phaser repeatedly calling preload() methods
@@ -51,68 +45,43 @@ class LoadAssets extends Phaser.Scene {
         this.load.image('hearts-half', 'assets/icons/hearts-half.png');
         
         // Misc.
-        this.load.image('vials', 'assets/tilesets/lab/vials.png');
-        this.load.image('window', 'assets/icons/Card X2/Card X2.png');
         this.load.image("tiles","assets/tilesets/lab/lab.png");
         this.load.image("door","assets/maps/door.png");
         this.load.image("elevator","assets/tilesets/lab/elevator.png");
         this.load.image("button-up","assets/tilesets/lab/button.png");
         this.load.image("button-down","assets/tilesets/lab/buttondown.png");
-        this.load.image("wrong","assets/icons/Icons/03.png");
-        this.load.image("right","assets/icons/Icons/30.png");
-        this.load.image("question","assets/icons/Icons/06.png");
-        this.load.spritesheet('portal', 'assets/tilesets/lab/portal.png',{frameWidth:500, frameHeight: 500})
-        this.load.spritesheet('scientist', 'assets/spritesheets/scientist.png',{frameWidth:190, frameHeight: 285})
+        this.load.image("wrong","assets/icons/03.png");
+        this.load.image("right","assets/icons/30.png");
+        this.load.image("question","assets/icons/06.png");
+        this.load.spritesheet('portal', 'assets/spritesheets/time.png',{frameWidth:100, frameHeight: 100});
+        this.load.spritesheet('pumpkin-dude', 'assets/spritesheets/pumpkin spritesheet.png',{frameWidth:18, frameHeight: 34});
+        this.load.spritesheet('scientist', 'assets/spritesheets/scientist.png',{frameWidth:190, frameHeight: 285});
 
         this.load.tilemapTiledJSON('map',"assets/maps/tilemap.json");
         
         // Tiles
-        this.load.image("lab-tiles","assets/tilesets/lab/lab.png");
-        this.load.image("forest-tiles","assets/tilesets/forest/Tiles/TilesNonSliced.png");
-        this.load.image("swamp-tiles","assets/tilesets/swamp/1 Tiles/Tileset.png");
-        this.load.image("industrial-tiles","assets/tilesets/lab/industrial zone/industrial.png");
         this.load.image("level1-tiles","assets/tilesets/custom/level1.png");
         this.load.image("level2-tiles","assets/tilesets/custom/level2.png");
 
         // Maps
-        this.load.tilemapTiledJSON('lab-map',"assets/maps/tilemap.json");
-        this.load.tilemapTiledJSON('forest-map',"assets/maps/forest.json");
-        this.load.tilemapTiledJSON('swamp-map',"assets/maps/swamp.json");
-        this.load.tilemapTiledJSON('industrial-map',"assets/maps/industrial.json");
         this.load.tilemapTiledJSON('level1-map',"assets/maps/level1.json");
         this.load.tilemapTiledJSON('level2-map',"assets/maps/level2.json");
 
         // Backgrounds
-        this.load.image('lab-back', 'assets/backgrounds/Scifi Lab/layers/back.png');
-		this.load.image('lab-middle', 'assets/backgrounds/Scifi Lab/layers/middle.png');
-		this.load.image('lab-front', 'assets/backgrounds/Scifi Lab/layers/front.png');
-        this.load.image('forest-back', 'assets/tilesets/forest/BG/2.png');
-		this.load.image('forest-middle', 'assets/tilesets/forest/BG/3.png');
-		this.load.image('forest-front', 'assets/tilesets/forest/BG/4.png');
-        this.load.image('swamp-back', 'assets/tilesets/space background/layers/1.png');
-		this.load.image('swamp-middle', 'assets/tilesets/space background/layers/2.png');
-		this.load.image('swamp-front', 'assets/tilesets/space background/layers/3.png');
-        this.load.image('industrial-back', 'assets/tilesets/lab/industrial zone/2 Background/2.png');
-		this.load.image('industrial-middle', 'assets/tilesets/lab/industrial zone/2 Background/3.png');
-		this.load.image('industrial-front', 'assets/tilesets/lab/industrial zone/2 Background/4.png');
-        this.load.spritesheet('pumpkin-dude', 'assets/spritesheets/pumpkin spritesheet.png',{frameWidth:18, frameHeight: 34})
-        this.load.image('level1-back', 'assets/tilesets/lab/industrial zone/2 Background/2.png');
-		this.load.image('level1-middle', 'assets/tilesets/lab/industrial zone/2 Background/3.png');
-		this.load.image('level1-front', 'assets/tilesets/lab/industrial zone/2 Background/4.png');
+        this.load.image('level1-back', 'assets/maps/transparent.png');
+		this.load.image('level1-middle', 'assets/maps/transparent.png');
+		this.load.image('level1-front', 'assets/maps/transparent.png');
         this.load.image('level2-back', 'assets/maps/transparent.png');
+        this.load.image('level1-background', 'assets/maps/Level1 Background.png');
 		this.load.image('level2-middle', 'assets/maps/transparent.png');
-		this.load.image('level2-front', 'assets/maps/Level2 Background.png');
+		this.load.image('level2-front', 'assets/maps/transparent.png');
+        this.load.image('level2-background', 'assets/maps/Level2 Background.png')
    
     }
     create () {
         this.scene.start("InGame");
     }
 }
-
-
-
-
-
 
 
 // FUTURE- A class to handle Main Menu, and Level Selection.
@@ -165,14 +134,11 @@ class InGame extends Phaser.Scene {
                 this.scale = scale;
                 this.playerSpawnX = (playerSpawnX === undefined) ? 0 : playerSpawnX;
                 this.playerSpawnY = (playerSpawnY === undefined) ? 0 : playerSpawnY;
+                this.back0 = name + "-background";
             }
         }
         const mapArray = [
-            new Map("lab",350,500,300, 3),
-            new Map("forest",500,500,600, 4),
-            new Map("swamp",-20,200,700, 4),
-            new Map("industrial",400,600,600, 2.4),
-            new Map("level1",400,600,600, 2.4, 600,600),
+            new Map("level1",400,600,600, 3, 600,600),
             new Map("level2",400,600,725, 3, 4200, 400)
         ]
         var currentMap = mapArray[currentMapNum];
@@ -207,6 +173,9 @@ class InGame extends Phaser.Scene {
 
         // MAP SECTION
         // Load the current map for the player.
+        const strName = currentMap.name + '-background';
+        console.log(strName);
+        this.add.image(2400, 1250, strName).setScale(3,3);
         const map = this.make.tilemap({ key: currentMap.mapName});
         const tileset = map.addTilesetImage(currentMap.name,currentMap.tilesetName);
         const backMap = map.createLayer("Background", tileset, 0, 200);
@@ -231,7 +200,6 @@ class InGame extends Phaser.Scene {
         doorMap.setScale(3,3);
         ladderMap.setScale(3,3);
         solidMap.setSize(300,3);
-        
  
 
         player = this.matter.add.sprite(400, 900, 'player');
@@ -620,12 +588,6 @@ class InGame extends Phaser.Scene {
                 }
 
 
-                if(health <= 0) {
-                    // Scene reset variables
-                    health = 100;
-                    this.scene.restart();
-                }
-
             } else {
                 entity.setData("health",entity.getData("health")-10);
                 if(entity.getData("health") <= 0) {
@@ -900,7 +862,7 @@ class InGame extends Phaser.Scene {
         
         this.anims.create({
             key: 'portalPlay',
-            frames: this.anims.generateFrameNumbers('portal', { start: 0, end: 23 }),
+            frames: this.anims.generateFrameNumbers('portal', { start: 0, end: 60 }),
             frameRate: 100,
             repeat: -1
         });
@@ -925,6 +887,8 @@ class InGame extends Phaser.Scene {
         // Overlap
         scoreText = this.add.text(0, 0, 'Press Enter', { fontSize: '32px', fill: '#FFFFFF' });
         scoreText.setVisible(false);
+        timeText = this.add.text(0, 0, 'Press B to go\nback in time...', { fontSize: '32px', fill: '#FFFFFF' });
+        timeText.setVisible(false);
 
         // ANIMATIONS
         // To simplify this, we have created an addAnimation function,
@@ -1005,6 +969,15 @@ class InGame extends Phaser.Scene {
             player.body.collisionFilter = (godMode ? {} : tempCol);
             console.log("Godmode has been " + (godMode ? "enabled" : "disabled") );
         });
+        
+        function backInTime() {
+            health = 100;
+            scene.restart();
+        }
+        
+        this.input.keyboard.on('keydown-B', function (event) {   
+            backInTime();
+        });
 
         this.input.keyboard.on('keydown-ESC', function (event) {   
             panel.setVisible(false);
@@ -1013,20 +986,19 @@ class InGame extends Phaser.Scene {
         savedCameraPos = this.cameras.main.scrollX;
 
 
-
-
         // MISC
         // Future- special map modifiers
-        if(currentMap == mapArray[4]) {
+        if(currentMap == mapArray[0]) {
             this.add.text(345, 875, 'Use the right and\nleft arrow keys\nto move.\n\nUse the up arrow\nkey to jump.', { fontSize: '32px', fill: '#FFFFFF' });
             this.add.text(1135, 975, 'To Interact', { fontSize: '32px', fill: '#FFFFFF' });
             this.add.text(3850, 2400, 'Press Space to attack.', { fontSize: '32px', fill: '#FFFFFF' });
             this.add.text(3550, 1990, 'Interact with the environment\n to solve puzzles.', { fontSize: '32px', fill: '#FFFFFF' });
-            this.add.text(495, 2150, 'Why did you kill all\n those scientists?!\n The time machine\n is overheating!', { fontSize: '32px', fill: '#FFFFFF' });
-            var portal = this.matter.add.sprite(295,1810, 'portal').setScale(0.6,1.08);
+            this.add.text(495, 2150, 'You found the\ntime machine!', { fontSize: '32px', fill: '#FFFFFF' });
+            var portal = this.matter.add.sprite(290,1950, 'portal').setScale(2,2);
             portal.body.isSensor = true;
             portal.body.isStatic = true;
-            portal.setDepth(-10);
+            //portal.body.setSize(100, 50, 50, 25);
+            portal.setDepth(0);
             portal.anims.play("portalPlay");
             this.cameras.main.setBackgroundColor('0x808080');
 
@@ -1037,7 +1009,7 @@ class InGame extends Phaser.Scene {
                 context: this
             });
             function portalEnter() {
-                currentMapNum = 5;
+                currentMapNum = 1;
                 // Scene reset variables
                 health = 100;
                 this.scene.restart();
@@ -1094,23 +1066,15 @@ class InGame extends Phaser.Scene {
             player.anims.play('attack',true);
         }
         
-
-
-
-        // FUTURE - Enemy movement.
-        /*vialsT = this.matter.overlap(player, this.doors);
-        if (vialsT){
-            scoreText.setVisible(true);
-            scoreText.x = player.x - 100;
-            scoreText.y = player.y + 50;
+        if(health <= 0) {
+            // Scene reset variables
+            timeText.x = player.x - 100;
+            timeText.y = player.y + 50;
+            timeText.setVisible(true);
+            player.setVelocityX(0);
+            player.setVelocityY(0);
+            player.anims.play('stand');
         }
-        else{
-            scoreText.setVisible(false);
-        }*/
-        
-        
-        
-        
         }
 
     }
@@ -1145,10 +1109,4 @@ var config = {
     ],
 };
 
-var game = new Phaser.Game(config);
-
-
-
-
-
-    
+var game = new Phaser.Game(config);    
