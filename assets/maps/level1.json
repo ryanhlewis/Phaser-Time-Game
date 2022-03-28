@@ -136,6 +136,11 @@
                          "name":"scale",
                          "type":"string",
                          "value":"0.4"
+                        }, 
+                        {
+                         "name":"zAI",
+                         "type":"int",
+                         "value":0
                         }],
                  "rotation":0,
                  "type":"",
@@ -159,6 +164,11 @@
                          "name":"scale",
                          "type":"string",
                          "value":"0.4"
+                        }, 
+                        {
+                         "name":"zAI",
+                         "type":"int",
+                         "value":0
                         }],
                  "rotation":0,
                  "type":"",
@@ -182,6 +192,11 @@
                          "name":"scale",
                          "type":"string",
                          "value":"0.4"
+                        }, 
+                        {
+                         "name":"zAI",
+                         "type":"int",
+                         "value":0
                         }],
                  "rotation":0,
                  "type":"",
@@ -205,6 +220,11 @@
                          "name":"scale",
                          "type":"string",
                          "value":"0.4"
+                        }, 
+                        {
+                         "name":"zAI",
+                         "type":"int",
+                         "value":0
                         }],
                  "rotation":0,
                  "type":"",
@@ -228,6 +248,11 @@
                          "name":"scale",
                          "type":"string",
                          "value":"0.4"
+                        }, 
+                        {
+                         "name":"zAI",
+                         "type":"int",
+                         "value":0
                         }],
                  "rotation":0,
                  "type":"",
@@ -358,7 +383,7 @@
  "nextobjectid":19,
  "orientation":"orthogonal",
  "renderorder":"right-down",
- "tiledversion":"1.8.1",
+ "tiledversion":"1.8.2",
  "tileheight":16,
  "tilesets":[
         {

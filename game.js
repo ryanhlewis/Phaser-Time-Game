@@ -471,6 +471,8 @@ class InGame extends Phaser.Scene {
         }
 
 
+        // Different Types of Enemy AIs
+
         async function enemyrun(pumpkin){ 
                   
             //pumpkin.body.collideWorldBounds = true; 
@@ -507,6 +509,24 @@ class InGame extends Phaser.Scene {
                     ))
             
             }
+
+        async function enemyfollow(badGuy){
+            var distance = badGuy.x - player.x;
+            badGuy.flipX = distance > 0;
+            badGuy.setVelocityX(Math.random()*(1.5) * (badGuy.flipX ? 1 : -1) + (badGuy.flipX ? -2 : 2));
+            badGuy.body.velocity.y = Math.random()*5;
+                
+                await new Promise((r) =>
+                    setTimeout(
+                    () =>
+                    new (function () {
+                        // Be random or seek
+                        enemyfollow(badGuy);
+                        })(),
+                (Math.random()*1000+1000)
+                    ))
+        }
+
     
         
         //this.enemies = this.matter.add.group();
@@ -527,9 +547,12 @@ class InGame extends Phaser.Scene {
                 const mainBody = Bodies.rectangle(0,0, ew * (scale * (0.66)), eh*(scale * 0.5), {
                   chamfer: { radius: 10 }
                 });
+                var detectionBody = Bodies.rectangle(0,0, ew * (scale * (6.66)), eh*(scale * 2.5), {
+                    isSensor: true
+                  });
                 var cB = Body.create({
                   parts: [
-                    mainBody,
+                    mainBody
                   ],
                   frictionStatic: 0,
                   frictionAir: 0,
@@ -554,7 +577,15 @@ class InGame extends Phaser.Scene {
                 //enemy.body.setPushable(false);
                 enemy.setData('isHit', Boolean(0));      
                 enemy.setData('health', 30);            
-                enemyrun(enemy);      
+
+                // The type of Enemy AI is decided here-
+                // EnemyRun is just a mindless back and forth script.
+                // EnemyFollow will follow player until a cooldown, which will reset if they hit.
+                if(enemyArray[i].properties[2].value == 0)
+                    enemyrun(enemy);
+                else 
+                    enemyfollow(enemy);
+
         }
   
         
@@ -672,6 +703,7 @@ class InGame extends Phaser.Scene {
             query.setExistingBody(cB).setFixedRotation();
             query.body.isStatic = true;
             query.body.isSensor = true;
+            query.alpha = 0;
             
             function executing(collision) {
                 var distance = Math.abs(collision.gameObjectA.x - collision.gameObjectB.x);
@@ -815,7 +847,7 @@ class InGame extends Phaser.Scene {
         });
 
         function doorLeave(collision) {
-            scoreText.setVisible(false);
+            //scoreText.setVisible(false);
         }
 
         var EnterKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E);
@@ -823,12 +855,13 @@ class InGame extends Phaser.Scene {
         var usedDoor = false;
         // Each door is mapped to the next door down and up.
         function doorOpen(collision) {
-            scoreText.x = player.x - 100;
-            scoreText.y = player.y + 50;
-            scoreText.setVisible(true);
+            //scoreText.x = player.x - 100;
+            //scoreText.y = player.y + 50;
+            //scoreText.setVisible(true);
             //console.log(collision);
             if(EnterKey.isDown && !usedDoor) {
                 console.log("Using door!");
+                //this.cameras.main.fadeOut(100);
                 usedDoor = true;
                 player.x = collision.gameObjectB.getData('teleport')[0];
                 player.y = collision.gameObjectB.getData('teleport')[1];
@@ -843,6 +876,7 @@ class InGame extends Phaser.Scene {
                 () =>
                     new (function () {
                         usedDoor = false;
+                        //ref.cameras.main.fadeIn(100);
                     })(),
                 500
             )
