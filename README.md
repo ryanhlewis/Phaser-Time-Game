@@ -35,5 +35,5 @@ as well as a basic puzzle system. Here's a permanent link to play [Sprint 3: The
 
 ## Sprint 4
 
-Sprint 4 is currently in progress.
+Sprint 4 is currently in progress. [Sprint 5](//v6p9d9t4.ssl.hwcdn.net/html/5461929/index.html)
 

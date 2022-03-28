@@ -96,6 +96,8 @@ class LoadAssets extends Phaser.Scene {
 		this.load.image('level2-middle', 'assets/maps/transparent.png');
 		this.load.image('level2-front', 'assets/maps/transparent.png');
         this.load.image('level2-background', 'assets/maps/Level2 Background.png')
+
+
    
     }
     create () {
@@ -133,6 +135,8 @@ class InGame extends Phaser.Scene {
         attackInput = new MultiKey(this, [SPACE]);
         
         
+        //Fonts
+        this.load.script('webfont', 'https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js');
 
     }
     
@@ -141,6 +145,14 @@ class InGame extends Phaser.Scene {
 
         // Reference, used for nested functions
         var ref = this;
+
+        // Fonts
+
+        WebFont.load({
+            google: {
+                families: [ 'Press Start 2P' ],
+            },
+        });
 
         // Remember, everything in the create() displays chronologically.
 
@@ -1175,11 +1187,11 @@ class InGame extends Phaser.Scene {
         // MISC
         // Future- special map modifiers
         if(currentMap == mapArray[0]) {
-            this.add.text(345, 875, 'Use the right and\nleft arrow keys\nto move.\n\nUse the up arrow\nkey to jump.', { fontSize: '32px', fill: '#FFFFFF' /*, font: 'Press Start 2P'*/ });
-            this.add.text(1135, 975, 'To Interact', { fontSize: '32px', fill: '#FFFFFF', /*, font: 'Press Start 2P'*/});
-            this.add.text(3850, 2400, 'Press Space to attack.', { fontSize: '32px', fill: '#FFFFFF' , /*, font: 'Press Start 2P'*/});
-            this.add.text(3550, 1990, 'Interact with the environment\n to solve puzzles.', { fontSize: '32px', fill: '#FFFFFF', /*, font: 'Press Start 2P'*/ });
-            this.add.text(495, 2150, 'You found the\ntime machine!', { fontSize: '32px', fill: '#FFFFFF',/*, font: 'Press Start 2P'*/ });
+            this.add.text(345, 875, 'Use the right and\nleft arrow keys\nto move.\n\nUse the up arrow\nkey to jump.', { fontSize: '32px', fill: '#FFFFFF' , fontFamily: 'Press-Start-2P' });
+            this.add.text(1135, 975, 'To Interact', { fontSize: '32px', fill: '#FFFFFF', fontFamily: 'Press-Start-2P'});
+            this.add.text(3850, 2400, 'Press Space to attack.', { fontSize: '32px', fill: '#FFFFFF' , fontFamily: 'Press-Start-2P'});
+            this.add.text(3550, 1990, 'Interact with the environment\n to solve puzzles.', { fontSize: '32px', fill: '#FFFFFF',fontFamily: 'Press-Start-2P' });
+            this.add.text(495, 2150, 'You found the\ntime machine!', { fontSize: '32px', fill: '#FFFFFF',fontFamily: 'Press-Start-2P' });
             var portal = this.matter.add.sprite(290,1950, 'portal').setScale(2,2);
 
             var mainBody = Bodies.rectangle(290,1950, 50, 50, {
@@ -1307,6 +1319,11 @@ var config = {
             mapping: "matterCollision" // Where to store in the Scene, e.g. scene.matterCollision
           }
         ]
+      },
+      fps: {
+        // FIXES Refresh Rate BUG, where players move depending on the speed of their monitor.
+        target: 70,
+        forceSetTimeOut: true
       },
     scene: [
         LoadAssets,
