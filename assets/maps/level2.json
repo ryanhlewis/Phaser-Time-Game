@@ -16,6 +16,53 @@
         }, 
         {
          "draworder":"topdown",
+         "id":8,
+         "name":"Powerups",
+         "objects":[
+                {
+                 "height":0,
+                 "id":19,
+                 "name":"",
+                 "point":true,
+                 "properties":[
+                        {
+                         "name":"type",
+                         "type":"string",
+                         "value":"powerup-cup"
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":1456,
+                 "y":412
+                }, 
+                {
+                 "height":0,
+                 "id":20,
+                 "name":"",
+                 "point":true,
+                 "properties":[
+                        {
+                         "name":"type",
+                         "type":"string",
+                         "value":"powerup-potion"
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":1020.66666666667,
+                 "y":16
+                }],
+         "opacity":1,
+         "type":"objectgroup",
+         "visible":true,
+         "x":0,
+         "y":0
+        }, 
+        {
+         "draworder":"topdown",
          "id":7,
          "name":"Enemies",
          "objects":[
@@ -376,8 +423,8 @@
          "x":0,
          "y":0
         }],
- "nextlayerid":8,
- "nextobjectid":19,
+ "nextlayerid":9,
+ "nextobjectid":21,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.8.2",

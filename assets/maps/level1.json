@@ -275,6 +275,35 @@
         }, 
         {
          "draworder":"topdown",
+         "id":13,
+         "name":"Powerups",
+         "objects":[
+                {
+                 "height":0,
+                 "id":19,
+                 "name":"",
+                 "point":true,
+                 "properties":[
+                        {
+                         "name":"type",
+                         "type":"string",
+                         "value":"powerup-shield"
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":737.333333333333,
+                 "y":252
+                }],
+         "opacity":1,
+         "type":"objectgroup",
+         "visible":true,
+         "x":0,
+         "y":0
+        }, 
+        {
+         "draworder":"topdown",
          "id":10,
          "name":"Buttons",
          "objects":[
@@ -379,8 +408,8 @@
          "x":0,
          "y":0
         }],
- "nextlayerid":13,
- "nextobjectid":19,
+ "nextlayerid":14,
+ "nextobjectid":20,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.8.2",

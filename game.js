@@ -25,6 +25,7 @@ var rightInput;
 var jumpInput;
 var attackInput;
 var healthLevel = 0;
+var currentPowerups = [];
 
 
 
@@ -87,10 +88,10 @@ class LoadAssets extends Phaser.Scene {
         this.load.tilemapTiledJSON('level2-map',"assets/maps/level2.json");
 
         // Backgrounds
-        this.load.image('level1-back', 'assets/maps/transparent.png');
-		this.load.image('level1-middle', 'assets/maps/transparent.png');
-		this.load.image('level1-front', 'assets/maps/transparent.png');
-        this.load.image('level2-back', 'assets/maps/transparent.png');
+        this.load.image('level1-back', 'assets/backgrounds/Scifi Lab/layers/back.png');
+		this.load.image('level1-middle', 'assets/backgrounds/Scifi Lab/layers/back.png');
+		this.load.image('level1-front', 'assets/backgrounds/Scifi Lab/layers/back.png');
+        this.load.image('level2-back', 'assets/maps/Level2 Background.png');
         this.load.image('level1-background', 'assets/maps/Level1 Background.png');
 		this.load.image('level2-middle', 'assets/maps/transparent.png');
 		this.load.image('level2-front', 'assets/maps/transparent.png');
@@ -132,18 +133,6 @@ class InGame extends Phaser.Scene {
         attackInput = new MultiKey(this, [SPACE]);
         
         
-        
-        //  Load the Google WebFont Loader script
-                
-        /*WebFontConfig = {
-
-            active: function() { game.time.events.add(Phaser.Timer.SECOND, createText, this); },
-
-            google: {
-            families: ['Revalia']
-            }
-
-        };*/
 
     }
     
@@ -211,9 +200,9 @@ class InGame extends Phaser.Scene {
 
         // MAP SECTION
         // Load the current map for the player.
-        const strName = currentMap.name + '-background';
-        console.log(strName);
-        this.add.image(2400, 1250, strName).setScale(3,3);
+        //const strName = currentMap.name + '-background';
+        //console.log(strName);
+        //this.add.image(2400, 1250, strName).setScale(3,3);
         const map = this.make.tilemap({ key: currentMap.mapName});
         const tileset = map.addTilesetImage(currentMap.name,currentMap.tilesetName);
         const backMap = map.createLayer("Background", tileset, 0, 200);
@@ -415,7 +404,7 @@ class InGame extends Phaser.Scene {
         }
 
         function elevatorLeave() {
-            scoreText.setVisible(false);
+            //scoreText.setVisible(false);
         }
 
         function elevatorInteract(collision) {
@@ -424,11 +413,12 @@ class InGame extends Phaser.Scene {
             if(collision.gameObjectB.active) {
                 scoreText.x = player.x - 100;
                 scoreText.y = player.y + 50;
-                scoreText.setVisible(true);
+                //scoreText.setVisible(true);
                 if(EnterKey.isDown) {
                     if(!elevatorInteracting) {
                         elevatorMove(collision.gameObjectB);
-                        scoreText.setVisible(false);
+                        //scoreText.setVisible(false);
+                        collision.gameObjectB.query.destroy();
                         elevatorInteracting = true;
                     }
                     //collision.gameObjectB.setVelocityY(-5);
@@ -455,6 +445,7 @@ class InGame extends Phaser.Scene {
                     console.log(chosenElevator.y);
                     chosenElevator.target = chosenElevator.y + elevatorArray[chosenElevator.number].properties[0].value;
                     chosenElevator.down = false;
+                    chosenElevator.query = createQuery(chosenElevator.x,chosenElevator.y);
                     console.log(chosenElevator);
                 }
             else
@@ -466,6 +457,7 @@ class InGame extends Phaser.Scene {
                     console.log(chosenElevator.y);
                     chosenElevator.target = chosenElevator.y - elevatorArray[chosenElevator.number].properties[0].value;
                     chosenElevator.down = true;
+                    chosenElevator.query = createQuery(chosenElevator.x,chosenElevator.y);
                     console.log(chosenElevator);
                 }
         }
@@ -629,35 +621,46 @@ class InGame extends Phaser.Scene {
         
         
         
-        
+
         
         var powerupbar = this.add.group();
                 
         var powerups = [];
         var powerupArray = [];
         
+        try {
+            powerupArray = map.getObjectLayer('Powerups').objects;
+        } catch (e) {
+            console.log("No powerups in this map!");
+        }
+        for(var i = 0; i < powerupArray.length; i++) {
         
-        var cup = this.matter.add.image(500 + powerups.length*50, 30,'powerup-cup').setScale(3.2,3.2);
-        var potion = this.matter.add.image(500 + powerups.length*50, 30, 'powerup-potion').setScale(3.2,3.2);
-        var shield = this.matter.add.image(500 + powerups.length*50, 30, 'powerup-shield').setScale(3.2,3.2);  
-        
-        powerups.push(cup);
-        powerups.push(potion);
-        powerups.push(shield);
+            var powerupName = powerupArray[i].properties[0].value;
+            var powerup = this.matter.add.image(500 + powerups.length*50, 30,powerupName).setScale(3.2,3.2);
+            powerups.push(powerup);
+            powerup.type = powerupName;
 
-        cup.type = "powerup-cup";
-        potion.type = "powerup-potion";
-        shield.type = "powerup-shield";
+            powerup.x = powerupArray[i].x*3;
+            powerup.y = powerupArray[i].y*3 + 155 - powerupArray[i].height;
+
+        }
+
+        // Between levels
+        for(var i = 0; i < currentPowerups.length; i++) {
+            var powerup = powerupbar.create(610 - i*50, 30, currentPowerups[i]);
+            powerup.setScale(3.2, 3.2);
+            powerup.setScrollFactor(0);  
+        }
         
         
         function createPowerUp(collision){
             
             //addPowerup(collision.gameObjectB.type);
             collision.gameObjectB.destroy();
-            var powerup = powerupbar.create(750 - powerups.length*50, 30, collision.gameObjectB.type);
+            var powerup = powerupbar.create(610 - currentPowerups.length*50, 30, collision.gameObjectB.type);
             console.log(collision.gameObjectB.type);
             powerup.setScale(3.2, 3.2);
-            powerups.push(powerup);
+            currentPowerups.push(collision.gameObjectB.type);
             powerup.setScrollFactor(0);  
             
         };
@@ -716,6 +719,8 @@ class InGame extends Phaser.Scene {
                 callback: executing,
                 context: this
             });
+
+            return query;
             
         }
         
@@ -962,6 +967,7 @@ class InGame extends Phaser.Scene {
                     puzzleBeat = true;
                     // WON THE PUZZLE-
                     this.elevators[0].active = true;
+                    this.elevators[0].query = createQuery(this.elevators[0].x,this.elevators[0].y);
                 }
                 return;
             } else 
@@ -1008,7 +1014,7 @@ class InGame extends Phaser.Scene {
                         button.setData('isDown', false);
                         button.setTexture('button-up');
                         buttonDisplay.setTexture('wrong');
-                        if(ref.matter.overlap(player, button)) {
+                        if(ref.matter.overlap(player.mainBody, button)) {
                             player.setVelocityY(-20);
                         } 
                     })(),
@@ -1169,22 +1175,39 @@ class InGame extends Phaser.Scene {
         // MISC
         // Future- special map modifiers
         if(currentMap == mapArray[0]) {
-            this.add.text(345, 875, 'Use the right and\nleft arrow keys\nto move.\n\nUse the up arrow\nkey to jump.', { fontSize: '32px', fill: '#FFFFFF', font: 'Revalia' });
-            this.add.text(1135, 975, 'To Interact', { fontSize: '32px', fill: '#FFFFFF', font: 'Revalia' });
-            this.add.text(3850, 2400, 'Press Space to attack.', { fontSize: '32px', fill: '#FFFFFF' , font: 'Revalia'});
-            this.add.text(3550, 1990, 'Interact with the environment\n to solve puzzles.', { fontSize: '32px', fill: '#FFFFFF', font: 'Revalia' });
-            this.add.text(495, 2150, 'You found the\ntime machine!', { fontSize: '32px', fill: '#FFFFFF', font: 'Revalia' });
+            this.add.text(345, 875, 'Use the right and\nleft arrow keys\nto move.\n\nUse the up arrow\nkey to jump.', { fontSize: '32px', fill: '#FFFFFF' /*, font: 'Press Start 2P'*/ });
+            this.add.text(1135, 975, 'To Interact', { fontSize: '32px', fill: '#FFFFFF', /*, font: 'Press Start 2P'*/});
+            this.add.text(3850, 2400, 'Press Space to attack.', { fontSize: '32px', fill: '#FFFFFF' , /*, font: 'Press Start 2P'*/});
+            this.add.text(3550, 1990, 'Interact with the environment\n to solve puzzles.', { fontSize: '32px', fill: '#FFFFFF', /*, font: 'Press Start 2P'*/ });
+            this.add.text(495, 2150, 'You found the\ntime machine!', { fontSize: '32px', fill: '#FFFFFF',/*, font: 'Press Start 2P'*/ });
             var portal = this.matter.add.sprite(290,1950, 'portal').setScale(2,2);
+
+            var mainBody = Bodies.rectangle(290,1950, 50, 50, {
+              //chamfer: { radius: 10 }
+              isStatic: true,
+              isSensor: true
+            });
+            var cB = Body.create({
+              parts: [
+                mainBody
+              ],
+            });
+            portal.setExistingBody(cB).setFixedRotation();
             portal.body.isSensor = true;
             portal.body.isStatic = true;
+
+            this.backgroundBack.width = 640*10;
+            this.backgroundBack.height = 640*10;
+            this.backgroundBack.y = 50;
+
             //portal.body.setSize(100, 50, 50, 25);
             portal.setDepth(0);
             portal.anims.play("portalPlay");
             this.cameras.main.setBackgroundColor('0x808080');
 
             this.matterCollision.addOnCollideActive({
-                objectA: player.bottom,
-                objectB: portal.body,
+                objectA: player.mainBody,
+                objectB: portal,
                 callback: portalEnter,
                 context: this
             });
@@ -1194,6 +1217,8 @@ class InGame extends Phaser.Scene {
                 health = 100;
                 this.scene.restart();
             }
+        } else if (currentMapNum == 1) {
+            this.cameras.main.setBackgroundColor('0x90cfdb');
         }
 
         
@@ -1270,8 +1295,8 @@ var config = {
     physics: { default: "matter", 
     matter:{
         debug: {
-            showBody: true,
-            showStaticBody: true
+            showBody: false,
+            showStaticBody: false
         }
     }},
     plugins: {
