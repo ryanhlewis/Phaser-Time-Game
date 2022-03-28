@@ -71,6 +71,7 @@ class LoadAssets extends Phaser.Scene {
         this.load.image("wrong","assets/icons/03.png");
         this.load.image("right","assets/icons/30.png");
         this.load.image("question","assets/icons/06.png");
+        this.load.image("interact","assets/icons/interact.png");
         this.load.spritesheet('portal', 'assets/spritesheets/time.png',{frameWidth:100, frameHeight: 100});
         this.load.spritesheet('pumpkin-dude', 'assets/spritesheets/pumpkin spritesheet.png',{frameWidth:18, frameHeight: 34});
         this.load.spritesheet('scientist', 'assets/spritesheets/scientist.png',{frameWidth:190, frameHeight: 285});
@@ -148,6 +149,9 @@ class InGame extends Phaser.Scene {
     
 
     create() {
+
+        // Reference, used for nested functions
+        var ref = this;
 
         // Remember, everything in the create() displays chronologically.
 
@@ -279,7 +283,7 @@ class InGame extends Phaser.Scene {
             if(!collision.bodyB.isSensor)
                 player.onGround = true;
             // Detecting sensor ladder.
-            else {
+            else if (collision.bodyB.isLadder) {
                 if(rightInput.isDown() || leftInput.isDown())
                     player.allowGravity = true;
                 if(jumpInput.isDown()) {
@@ -333,6 +337,7 @@ class InGame extends Phaser.Scene {
             doorObject.body.isSensor = true;
             doorObject.body.isStatic = true;
             this.doors.push(doorObject);
+            createQuery(doorObject.x,doorObject.y);
             // Attach door link
             if(i % 2 == 0 && i != doorArray.length-1) {
                 doorObject.setData('teleport', [doorArray[i+1].x*3,doorArray[i+1].y*3 + 155]  );
@@ -559,7 +564,7 @@ class InGame extends Phaser.Scene {
         
         solidMap.setCollisionByExclusion([-1]);
         ladderMap.setCollisionByExclusion([-1]);
-        this.matter.world.convertTilemapLayer(ladderMap, {isSensor:true,isStatic:true});
+        this.matter.world.convertTilemapLayer(ladderMap, {isSensor:true,isStatic:true,isLadder:true});
         this.matter.world.convertTilemapLayer(solidMap);
 
 
@@ -636,15 +641,51 @@ class InGame extends Phaser.Scene {
         
         
         
+        /*
+        Useful sometimes- a small timed event that functions like an Update Loop
 
+        var timedEvent
+
+        if(timedEvent == null)
+        timedEvent = ref.time.addEvent({ delay: 1000, callback: executing, callbackScope: this, loop: true });
+        
+        if(timedEvent != null)
+        timedEvent.destroy();
+        */
 
     
-        
-        
-        
-        
-        
-        
+        function createQuery(x,y) {
+
+            var query = ref.matter.add.image(x, y, 'interact').setScale(2.2,2.2);
+            query.body.isStatic = true;
+            query.body.isSensor = true;
+
+            var mainBody = Bodies.rectangle(x,y, 700, 400, {
+                isSensor:true,
+                isStatic:true
+            });
+            var cB = Body.create({
+            parts: [
+                mainBody,
+            ],
+            });
+            query.setExistingBody(cB).setFixedRotation();
+            query.body.isStatic = true;
+            query.body.isSensor = true;
+            
+            function executing(collision) {
+                var distance = Math.abs(collision.gameObjectA.x - collision.gameObjectB.x);
+                collision.gameObjectB.alpha = 1 - 0.75 * (distance / 100);
+            }
+    
+            ref.matterCollision.addOnCollideActive({
+                objectA: player.mainBody,
+                objectB: query,
+                callback: executing,
+                context: this
+            });
+            
+        }
         
         
         
@@ -777,7 +818,7 @@ class InGame extends Phaser.Scene {
             scoreText.setVisible(false);
         }
 
-        var EnterKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER);
+        var EnterKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E);
 
         var usedDoor = false;
         // Each door is mapped to the next door down and up.
@@ -978,8 +1019,6 @@ class InGame extends Phaser.Scene {
         this.cameras.main.startFollow(player);
         this.cameras.main.setDeadzone(100, 200);
 
-        // Reference, used for nested functions
-        var ref = this;
 
         // COLLISIONS
         //solidMap.setCollisionBetween(1, 999, true, 'Solid');
