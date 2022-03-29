@@ -35,5 +35,5 @@ as well as a basic puzzle system. Here's a permanent link to play [Sprint 3: The
 
 ## Sprint 4
 
-Sprint 4 is currently in progress. [Sprint 5](//v6p9d9t4.ssl.hwcdn.net/html/5461929/index.html)
+To showcase a Pre-Alpha, we made the puzzle fully functional and go to an Elevator System, we added UI in hearts that can be added to, taken away, and edited dynamically, as well as completed an entire second level to show how the game would expand. [Sprint 4: Pre-Alpha](//v6p9d9t4.ssl.hwcdn.net/html/5461929/index.html)
 
