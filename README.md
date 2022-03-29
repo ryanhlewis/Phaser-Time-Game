@@ -24,7 +24,7 @@ as well as a basic tilemap created with TILED. Here's a permanent link to play [
 ## Sprint 2
 
 To make a proof of environment art for our game, we added a several short maps and their tilesets, an attacking feature,
-as well as backgrounds that correspond to the levels. Here's a permanent link to play [Sprint 2: The Environment](//).
+as well as backgrounds that correspond to the levels. Here's a permanent link to play [Sprint 2: The Environment](//v6p9d9t4.ssl.hwcdn.net/html/5346616/index.html).
 
 ## Sprint 3
 
