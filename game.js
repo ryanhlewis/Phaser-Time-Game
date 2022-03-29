@@ -26,6 +26,7 @@ var jumpInput;
 var attackInput;
 var healthLevel = 0;
 var currentPowerups = [];
+var block;
 
 
 
@@ -95,10 +96,8 @@ class LoadAssets extends Phaser.Scene {
         this.load.image('level1-background', 'assets/maps/Level1 Background.png');
 		this.load.image('level2-middle', 'assets/maps/transparent.png');
 		this.load.image('level2-front', 'assets/maps/transparent.png');
-        this.load.image('level2-background', 'assets/maps/Level2 Background.png')
-
-
-   
+        this.load.image('level2-background', 'assets/maps/Level2 Background.png');
+        this.load.image('block', 'assets/icons/06.png');   
     }
     create () {
         this.scene.start("InGame");
@@ -178,7 +177,7 @@ class InGame extends Phaser.Scene {
         }
         const mapArray = [
             new Map("level1",400,600,600, 3, 600,600),
-            new Map("level2",400,600,725, 3, 4200, 400)
+            new Map("level2",400,600,725, 3, 440, 2300)
         ]
         var currentMap = mapArray[currentMapNum];
 
@@ -241,6 +240,10 @@ class InGame extends Phaser.Scene {
         solidMap.setSize(300,3);
  
 
+        block = this.add.image(3050, 970, 'block').setScale(3, 3);
+        //block.body.isSensor = true;
+        //block.body.isStatic = true;
+        
         player = this.matter.add.sprite(400, 900, 'player');
         console.log(player);
 
@@ -1281,6 +1284,8 @@ class InGame extends Phaser.Scene {
 
         if(attackInput.isDown()) {
             player.anims.play('attack',true);
+            console.log(player.x);
+            console.log(player.y);
         }
         
         if(health <= 0) {
@@ -1307,8 +1312,8 @@ var config = {
     physics: { default: "matter", 
     matter:{
         debug: {
-            showBody: false,
-            showStaticBody: false
+            showBody: true,
+            showStaticBody: true
         }
     }},
     plugins: {
