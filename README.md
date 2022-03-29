@@ -35,5 +35,11 @@ as well as a basic puzzle system. Here's a permanent link to play [Sprint 3: The
 
 ## Sprint 4
 
-To showcase a Pre-Alpha, we made the puzzle fully functional and go to an Elevator System, we added UI in hearts that can be added to, taken away, and edited dynamically, as well as completed an entire second level to show how the game would expand. [Sprint 4: Pre-Alpha](//v6p9d9t4.ssl.hwcdn.net/html/5461929/index.html)
+To showcase a Pre-Alpha, we made the puzzle fully functional and go to an Elevator System, we added UI in hearts that can be added to, taken away, and edited dynamically, as well as completed an entire second level to show how the game would expand. Here's a permanent link to play [Sprint 4: Pre-Alpha](//v6p9d9t4.ssl.hwcdn.net/html/5461929/index.html)
+
+## Sprint 5
+
+To mark a half-way point, we playtested everything with the help of fellow students, and went back and fixed a majority of bugs. In doing this, we added a Powerups UI, as well as their pickup counterpart, fixed colliders everywhere in the game, from stairs, to enemies, to buttons, as well as added new enemy functionality: targetting the player. Also, we added a "Death Screen" and prompt the player to respawn. Here's a permanent link to play [Sprint 5: Half-Way](//v6p9d9t4.ssl.hwcdn.net/html/5495801/index.html).
+
+
 
