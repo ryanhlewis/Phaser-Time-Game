@@ -27,6 +27,7 @@ var attackInput;
 var healthLevel = 0;
 var currentPowerups = [];
 var block;
+var blockT;
 
 
 
@@ -240,9 +241,11 @@ class InGame extends Phaser.Scene {
         solidMap.setSize(300,3);
  
 
-        block = this.add.image(3050, 970, 'block').setScale(3, 3);
-        //block.body.isSensor = true;
-        //block.body.isStatic = true;
+        //block = this.add.image(3050, 970, 'block').setScale(3, 3);
+        block = Bodies.rectangle(3050, 970, 100, 100, {
+              isStatic: true,
+              isSensor: true
+        });
         
         player = this.matter.add.sprite(400, 900, 'player');
         console.log(player);
@@ -831,6 +834,15 @@ class InGame extends Phaser.Scene {
                     }
                 }
             }
+            
+            this.blockOverlap = function(collision){
+                blockT = true;
+                console.log('Hello');
+            }
+            this.blockOverlapEnd = function(collision){
+                blockT = false;
+                console.log('Hi');
+            }
 
             this.matterCollision.addOnCollideActive({
                 objectA: this.enemies,
@@ -846,8 +858,18 @@ class InGame extends Phaser.Scene {
                 context: this
             });
 
-
-        
+            this.matterCollision.addOnCollideActive({
+                objectA: player.mainBody,
+                objectB: block,
+                callback: this.blockOverlap,
+                context: this
+            });
+            this.matterCollision.addOnCollideEnd({
+                objectA: this.block,
+                objectB: player.mainBody,
+                callback: this.blockOverlapEnd,
+                context: this
+            }); 
         
         
         
@@ -879,7 +901,7 @@ class InGame extends Phaser.Scene {
             //scoreText.y = player.y + 50;
             //scoreText.setVisible(true);
             //console.log(collision);
-            if(EnterKey.isDown && !usedDoor) {
+            if(EnterKey.isDown && !usedDoor && !blockT) {
                 console.log("Using door!");
                 //this.cameras.main.fadeOut(100);
                 usedDoor = true;
@@ -1195,6 +1217,7 @@ class InGame extends Phaser.Scene {
             this.add.text(3850, 2400, 'Press Space to attack.', { fontSize: '32px', fill: '#FFFFFF' , fontFamily: 'Press-Start-2P'});
             this.add.text(3550, 1990, 'Interact with the environment\n to solve puzzles.', { fontSize: '32px', fill: '#FFFFFF',fontFamily: 'Press-Start-2P' });
             this.add.text(495, 2150, 'You found the\ntime machine!', { fontSize: '32px', fill: '#FFFFFF',fontFamily: 'Press-Start-2P' });
+            this.add.text(3150, 800, 'You need a\nkeycard!', { fontSize: '32px', fill: '#FFFFFF',fontFamily: 'Press-Start-2P' });
             var portal = this.matter.add.sprite(290,1950, 'portal').setScale(2,2);
 
             var mainBody = Bodies.rectangle(290,1950, 50, 50, {
