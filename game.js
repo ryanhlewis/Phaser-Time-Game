@@ -1257,6 +1257,8 @@ class InGame extends Phaser.Scene {
             }
         } else if (currentMapNum == 1) {
             this.cameras.main.setBackgroundColor('0x90cfdb');
+            
+            this.add.text(4372, 1474, 'Go to the wishing well...', { fontSize: '32px', fill: '#FFFFFF',fontFamily: 'Press-Start-2P' });
         }
 
         
