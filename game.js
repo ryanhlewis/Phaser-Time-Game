@@ -27,7 +27,8 @@ var attackInput;
 var healthLevel = 0;
 var currentPowerups = [];
 
-
+        // Checkpoint, for any death function usage.
+        var lastCheckpoint;
 
 
 
@@ -39,7 +40,7 @@ var poweruplevel = 0;
 
 
 
-var currentMapNum = 0;
+var currentMapNum = 2;
 
 // This scene loads all game assets, and is never loaded again.
 // This is due to Phaser repeatedly calling preload() methods
@@ -82,21 +83,28 @@ class LoadAssets extends Phaser.Scene {
         // Tiles
         this.load.image("level1-tiles","assets/tilesets/custom/level1.png");
         this.load.image("level2-tiles","assets/tilesets/custom/level2.png");
+        this.load.image("bosslevel-tiles","assets/tilesets/custom/bosslevel.png");
+
 
         // Maps
         this.load.tilemapTiledJSON('level1-map',"assets/maps/level1.json");
         this.load.tilemapTiledJSON('level2-map',"assets/maps/level2.json");
+        this.load.tilemapTiledJSON('bosslevel-map',"assets/maps/bosslevel.json");
+
 
         // Backgrounds
-        this.load.image('level1-back', 'assets/backgrounds/Scifi Lab/layers/back.png');
-		this.load.image('level1-middle', 'assets/backgrounds/Scifi Lab/layers/back.png');
-		this.load.image('level1-front', 'assets/backgrounds/Scifi Lab/layers/back.png');
+        this.load.image('level1-background', 'assets/maps/Level1 Background.png');
+		this.load.image('level2-middle', 'assets/maps/transparent.png');
+		this.load.image('level2-front', 'assets/maps/transparent.png');
         this.load.image('level2-back', 'assets/maps/Level2 Background.png');
         this.load.image('level1-background', 'assets/maps/Level1 Background.png');
 		this.load.image('level2-middle', 'assets/maps/transparent.png');
 		this.load.image('level2-front', 'assets/maps/transparent.png');
         this.load.image('level2-background', 'assets/maps/Level2 Background.png')
 
+        this.load.image('bosslevel-back', 'assets/maps/transparent.png');
+		this.load.image('bosslevel-middle', 'assets/maps/transparent.png');
+		this.load.image('bosslevel-front', 'assets/maps/transparent.png');
 
    
     }
@@ -146,6 +154,8 @@ class InGame extends Phaser.Scene {
         // Reference, used for nested functions
         var ref = this;
 
+
+
         // Fonts
 
         WebFont.load({
@@ -178,7 +188,8 @@ class InGame extends Phaser.Scene {
         }
         const mapArray = [
             new Map("level1",400,600,600, 3, 600,600),
-            new Map("level2",400,600,725, 3, 4200, 400)
+            new Map("level2",400,600,725, 3, 4200, 400),
+            new Map("bosslevel",400,600,725, 3, 400, 200),
         ]
         var currentMap = mapArray[currentMapNum];
 
@@ -319,6 +330,13 @@ class InGame extends Phaser.Scene {
         player.x = currentMap.playerSpawnX;
         player.y = currentMap.playerSpawnY;
 
+
+        // Checkpoint--
+        if(lastCheckpoint !== undefined) {
+            player.x = lastCheckpoint.x;
+            player.y = lastCheckpoint.y;
+        }
+          
 
         player.setDepth(5);
 
@@ -789,7 +807,7 @@ class InGame extends Phaser.Scene {
                 }
             }
 
-            entity.setVelocityX((attacker.x-entity.x)*0.5);
+            entity.setVelocityX((attacker.x-entity.x)*-0.05);
             entity.setVelocityY(-10);
             
             
@@ -1231,8 +1249,133 @@ class InGame extends Phaser.Scene {
             }
         } else if (currentMapNum == 1) {
             this.cameras.main.setBackgroundColor('0x90cfdb');
+        } else if(currentMapNum == 2) {
+
+            // Essentials
+            var bossHealth = this.add.text(270, 530, 'BOSS HEALTH', { fontSize: '15px', fill: '#FFFFFF' , fontFamily: 'Press-Start-2P' });
+            bossHealth.setScrollFactor(0);
+
+            let healthBar=makeBar(140,100,0xe74c3c);
+            setValue(healthBar,100);
+
+            var textView = this.add.text(200, 100, '', { fontSize: '32px', fill: '#FFFFFF' , fontFamily: 'Press-Start-2P' });
+            textView.x =  ( this.sys.canvas.width) * .5;
+            textView.setScrollFactor(0);
+
+            // The first checkpoint puts the player past this starter text--
+
+            // I could easily check for a checkpoint array, but it's always fun to try something (new!)
+            if(player.x < 500) {
+                textView.text = 'You should not be here.';
+
+                this.cameras.main.shake(1000);
+
+                changeText("Leave. Now.", 2000);
+                changeText("Fine. Then die.", 5000);
+
+                runFunction(function() {
+                    
+                    ref.cameras.main.shake(50);
+
+                }, 5000);
+
+                changeText("", 10000);
+            } else if(player.x > 500 && player.x < 5000) {
+                textView.text = "Reset from Checkpoint 1";
+                changeText("", 5000);
+            }
+
+
+            // Set listeners for boss health at certain amounts--
+
+
+
+
         }
 
+        // Boss script
+        async function changeText(newString,ms) {
+            await new Promise((r) =>
+                setTimeout(
+                    () =>
+                        new (function () {
+                            textView.text = newString;
+                        })(),
+                    ms
+                )
+            );
+        }
+        // Some functional programming to help async tasks
+        async function runFunction(func,ms) {
+            await new Promise((r) =>
+                setTimeout(
+                    () =>
+                        new (function () {
+                            func();
+                        })(),
+                    ms
+                )
+            );
+        }
+
+
+        
+        // Checkpoint Code
+        var checkpointArray = [];
+        try {
+            checkpointArray = map.getObjectLayer('Checkpoints').objects;
+        } catch (e) {
+            console.log("No checkpoints in this map.");
+        }
+        for(var i = 0; i < checkpointArray.length; i++) {
+            var checkpoint = this.matter.add.image(checkpointArray[i].x*3, checkpointArray[i].y*3 + 85 - checkpointArray[i].height, 'door').setScale(5,5);
+            checkpoint.body.isSensor = true;
+            checkpoint.body.isStatic = true;
+
+            ref.matterCollision.addOnCollideStart({
+                objectA: player.mainBody,
+                objectB: checkpoint,
+                callback: checkpointReached,
+                context: this
+            });
+
+            function checkpointReached(collision) {
+                console.log("Reached checkpoint");
+                lastCheckpoint = {};
+                lastCheckpoint.x = collision.gameObjectB.x;
+                lastCheckpoint.y = collision.gameObjectB.y;
+
+            }
+            // Used from create function underneath player POS, check if CHECKPOINT is null.
+            // If using checkpoints for anything OTHER than position storage, like 
+            // point in dialogue, MAKE SURE to check for it!
+
+        }
+
+
+        // Healthbar code
+        function makeBar(x, y,color) {
+            //draw the bar
+            let bar = ref.add.graphics();
+            bar.setScrollFactor(0);
+    
+            //color the bar
+            bar.fillStyle(color, 1);
+    
+            //fill the bar with a rectangle
+            bar.fillRect(-70, 450, 500, 10);
+            
+            //position the bar
+            bar.x = x;
+            bar.y = y;
+    
+            //return the bar
+            return bar;
+        }
+        function setValue(bar,percentage) {
+            //scale the bar
+            bar.scaleX = percentage/100;
+        }
         
 
     }
