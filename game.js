@@ -41,6 +41,9 @@ var poweruplevel = 0;
 
 var currentMapNum = 0;
 
+
+
+
 // This scene loads all game assets, and is never loaded again.
 // This is due to Phaser repeatedly calling preload() methods
 // for scene changes. So, everything is loaded once here.
@@ -97,13 +100,88 @@ class LoadAssets extends Phaser.Scene {
 		this.load.image('level2-front', 'assets/maps/transparent.png');
         this.load.image('level2-background', 'assets/maps/Level2 Background.png')
 
-
-   
+        
+        
+        this.load.image("logo", "assets/title.png");
+        this.load.image("play_button", "assets/play.png");
+        this.load.image("options_button", "assets/options.png");
+        this.load.image("hover", "assets/icons/10.png");
+        
+        
+        
+        
+        
+        
+    
+        
     }
     create () {
-        this.scene.start("InGame");
+        this.scene.start("MainMenu");
     }
 }
+
+
+
+
+class MainMenu extends Phaser.Scene{
+	constructor(){
+		super("MainMenu")
+	};
+
+	preload(){
+        /*let loadingBar = this.add.graphics({
+            fillStyle: {
+                color: 0xffffff // white
+            }
+        })
+        
+        this.load.on("progress", (percent)=>{
+            loadingBar.fillRect(0, this.game.renderer.height/2, this.game.renderer.width * percent);
+            console.log(percent)
+        })
+        
+        this.load.on("complete", ()=>{
+            console.log("done")
+        })*/
+    }
+
+    create(){
+        
+        var rref = this;
+        
+        rref.add.image(0, 0, "level1-back").setOrigin(0).setScale(4);
+        
+        rref.add.image(rref.sys.game.config.width/2, rref.sys.game.config.height/2-100, "logo");
+        
+        let playButton = rref.add.image(rref.sys.game.config.width/2, rref.sys.game.config.height/2+50, "play_button").setScale(0.25);
+        
+        var hoverSprite = rref.add.image(100, 100, "hover").setScale(2);
+        hoverSprite.setVisible(0);
+        
+        
+        playButton.setInteractive();
+        
+        playButton.on("pointerover", ()=>{
+            hoverSprite.setVisible(1);
+            hoverSprite.x = playButton.x - 150;
+            hoverSprite.y = playButton.y;
+        })
+        
+        playButton.on("pointerout", ()=>{
+            hoverSprite.setVisible(0);
+         }) 
+        
+        playButton.on("pointerdown", ()=>{
+            rref.scene.start("InGame");
+        })
+	}
+
+	update(){	
+	}
+}
+
+
+
 
 
 
@@ -138,11 +216,18 @@ class InGame extends Phaser.Scene {
         //Fonts
         this.load.script('webfont', 'https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js');
 
+        
     }
     
 
     create() {
 
+        
+        
+        
+        
+        
+        
         // Reference, used for nested functions
         var ref = this;
 
@@ -651,6 +736,23 @@ class InGame extends Phaser.Scene {
             var powerup = this.matter.add.image(500 + powerups.length*50, 30,powerupName).setScale(3.2,3.2);
             powerups.push(powerup);
             powerup.type = powerupName;
+            
+            
+            
+            //potion powerup
+            if (powerup.type == "powerup-potion"){
+                this.matterCollision.addOnCollideStart({
+                    objectA: player.mainBody,
+                    objectB: powerups,
+                    callback: health+=50,
+                    context: this
+                });
+                
+            }
+            
+            
+            
+            
 
             powerup.x = powerupArray[i].x*3;
             powerup.y = powerupArray[i].y*3 + 155 - powerupArray[i].height;
@@ -684,6 +786,15 @@ class InGame extends Phaser.Scene {
             callback: createPowerUp,
             context: this
         });
+        
+        
+        
+        
+        
+        
+        
+        
+        
         
         
         
@@ -764,6 +875,19 @@ class InGame extends Phaser.Scene {
                             
             if(entity.getData("Player")) {
                 health-=10;
+                
+                
+                
+                //shield powerup
+                if ("powerup-shield" in currentPowerups){
+                    health+=3
+                };
+                
+                
+                
+                
+                
+                
                 //txt.text = health;
 
                 // First, choose the right heart to act on-
@@ -1258,6 +1382,7 @@ class InGame extends Phaser.Scene {
         if(!player.onGround && !attackInput.isDown())
             player.anims.play('jump',true);
         
+        
         if(leftInput.isDown()) {
             player.flipX = true;
             player.setVelocityX(-5);
@@ -1327,6 +1452,7 @@ var config = {
       },
     scene: [
         LoadAssets,
+        MainMenu,
         InGame        
     ],
 };
