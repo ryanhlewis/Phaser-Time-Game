@@ -27,7 +27,7 @@ var attackInput;
 var healthLevel = 0;
 var currentPowerups = [];
 var block;
-var blockT;
+var blockT = false;
 
 
 
@@ -64,6 +64,8 @@ class LoadAssets extends Phaser.Scene {
         this.load.image('powerup-cup', 'assets/powerups/cup.png');
         this.load.image('powerup-potion', 'assets/powerups/potion.png');
         this.load.image('powerup-shield', 'assets/powerups/shield.png');
+        this.load.image('powerup-keycard', 'assets/powerups/newspaper.png');
+        this.load.image('powerup-jar', 'assets/powerups/light-jar1.png');
         
         // Misc.
         this.load.image("tiles","assets/tilesets/lab/lab.png");
@@ -98,7 +100,7 @@ class LoadAssets extends Phaser.Scene {
 		this.load.image('level2-middle', 'assets/maps/transparent.png');
 		this.load.image('level2-front', 'assets/maps/transparent.png');
         this.load.image('level2-background', 'assets/maps/Level2 Background.png');
-        this.load.image('block', 'assets/icons/06.png');   
+        this.load.image('block', 'assets/maps/overlap.png');   
     }
     create () {
         this.scene.start("InGame");
@@ -869,9 +871,56 @@ class InGame extends Phaser.Scene {
                 objectB: player.mainBody,
                 callback: this.blockOverlapEnd,
                 context: this
-            }); 
+            });
         
-        
+            
+            var xB = 0;
+            var yB = 0;
+            if(currentMapNum == 0){
+                xB = 3050;
+                yB = 950;
+            } else if(currentMapNum == 1){
+                xB = 3125;
+                yB = 2300;
+            }
+            var doorPrompt = this.matter.add.image(xB, yB, 'block').setScale(2,2);
+            doorPrompt.body.isStatic = true;
+            doorPrompt.body.isSensor = true;
+
+            this.matterCollision.addOnCollideActive({
+                objectA: player.mainBody,
+                objectB: doorPrompt,
+                callback: doorPromptFunction,
+                context: this
+            });
+            
+            this.matterCollision.addOnCollideEnd({
+                objectA: player.mainBody,
+                objectB: doorPrompt,
+                callback: falseBool,
+                context: this
+            });
+
+            function doorPromptFunction() {
+                blockT = true;
+                var textB = '';
+                if(textB == ''){
+                    if(currentMapNum == 0){
+                        textB = this.add.text(3150, 800, 'You need a\nkeycard!', { fontSize: '32px', fill: '#FFFFFF',fontFamily: 'Press-Start-2P' });
+                    }
+                }
+                if(currentPowerups.length > 0) {
+                    doorPrompt.destroy();
+                    if(textB != ''){
+                       textB.setVisible(false);
+                    }
+                    blockT = false;
+                }
+            }
+            
+            function falseBool() {
+                blockT = false;
+            }
         
         // Player collider has been created- put all collisions here.
         this.matterCollision.addOnCollideActive({
@@ -1217,7 +1266,6 @@ class InGame extends Phaser.Scene {
             this.add.text(3850, 2400, 'Press Space to attack.', { fontSize: '32px', fill: '#FFFFFF' , fontFamily: 'Press-Start-2P'});
             this.add.text(3550, 1990, 'Interact with the environment\n to solve puzzles.', { fontSize: '32px', fill: '#FFFFFF',fontFamily: 'Press-Start-2P' });
             this.add.text(495, 2150, 'You found the\ntime machine!', { fontSize: '32px', fill: '#FFFFFF',fontFamily: 'Press-Start-2P' });
-            this.add.text(3150, 800, 'You need a\nkeycard!', { fontSize: '32px', fill: '#FFFFFF',fontFamily: 'Press-Start-2P' });
             var portal = this.matter.add.sprite(290,1950, 'portal').setScale(2,2);
 
             var mainBody = Bodies.rectangle(290,1950, 50, 50, {
@@ -1255,10 +1303,13 @@ class InGame extends Phaser.Scene {
                 health = 100;
                 this.scene.restart();
             }
+            //falseDoor(3100, 800);
         } else if (currentMapNum == 1) {
             this.cameras.main.setBackgroundColor('0x90cfdb');
             
-            this.add.text(4372, 1474, 'Go to the wishing well...', { fontSize: '32px', fill: '#FFFFFF',fontFamily: 'Press-Start-2P' });
+            this.add.text(300, 2425, 'You can always press\nB to go back in time.', { fontSize: '32px', fill: '#FFFFFF',fontFamily: 'Press-Start-2P' });
+            
+            this.add.text(4255, 1225, 'Go to the wishing\nwell with the jar...', { fontSize: '32px', fill: '#FFFFFF',fontFamily: 'Press-Start-2P' });
         }
 
         
