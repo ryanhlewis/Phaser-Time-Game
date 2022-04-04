@@ -28,6 +28,7 @@ var healthLevel = 0;
 var currentPowerups = [];
 var block;
 var blockT = false;
+var tempMap;
 
         // Checkpoint, for any death function usage.
         var lastCheckpoint;
@@ -42,7 +43,7 @@ var poweruplevel = 0;
 
 
 
-var currentMapNum = 2;
+var currentMapNum = 0;
 
 
 
@@ -100,6 +101,7 @@ class LoadAssets extends Phaser.Scene {
 
 
         // Backgrounds
+        this.load.image('level1-back', 'assets/backgrounds/Scifi Lab/layers/back.png');
         this.load.image('level1-background', 'assets/maps/Level1 Background.png');
 		this.load.image('level2-middle', 'assets/maps/transparent.png');
 		this.load.image('level2-front', 'assets/maps/transparent.png');
@@ -280,7 +282,7 @@ class InGame extends Phaser.Scene {
         const mapArray = [
             new Map("level1",400,600,600, 3, 600,600),
             new Map("level2",400,600,725, 3, 440, 2300),
-            new Map("bosslevel",400,600,725, 3, 400, 200),
+            new Map("bosslevel",400,600,725, 3, 8000, 200),
         ]
         var currentMap = mapArray[currentMapNum];
 
@@ -1198,8 +1200,20 @@ class InGame extends Phaser.Scene {
                 if(!puzzleBeat) {
                     puzzleBeat = true;
                     // WON THE PUZZLE-
-                    this.elevators[0].active = true;
-                    this.elevators[0].query = createQuery(this.elevators[0].x,this.elevators[0].y);
+                    if(currentMapNum == 0) {
+                        this.elevators[0].active = true;
+                        this.elevators[0].query = createQuery(this.elevators[0].x,this.elevators[0].y);
+                    } else if(currentMapNum == 2) {
+                        console.log(tempMap);
+
+                        var tempCol = player.body.collisionFilter;
+                        player.body.collisionFilter =  {};
+
+                        resetCol(tempCol);
+
+
+                        this.buttons[0].destroy();
+                    }
                 }
                 return;
             } else 
@@ -1251,6 +1265,19 @@ class InGame extends Phaser.Scene {
                         } 
                     })(),
                 1000
+            )
+        );
+        }
+
+
+        async function resetCol(button) {
+            await new Promise((r) =>
+            setTimeout(
+                () =>
+                    new (function () {
+                        player.body.collisionFilter = button;
+                    })(),
+                2000
             )
         );
         }
@@ -1437,7 +1464,7 @@ class InGame extends Phaser.Scene {
             portal.anims.play("portalPlay");
             this.cameras.main.setBackgroundColor('0x808080');
 
-            this.matterCollision.addOnCollideActive({
+            this.matterCollision.addOnCollideStart({
                 objectA: player.mainBody,
                 objectB: portal,
                 callback: portalEnter,
@@ -1456,7 +1483,41 @@ class InGame extends Phaser.Scene {
             this.add.text(300, 2425, 'You can always press\nB to go back in time.', { fontSize: '32px', fill: '#FFFFFF',fontFamily: 'Press-Start-2P' });
             
             this.add.text(4255, 1225, 'Go to the wishing\nwell with the jar...', { fontSize: '32px', fill: '#FFFFFF',fontFamily: 'Press-Start-2P' });
+        
+            createQuery(4170, 450);
+
+
+
+            var portal = this.matter.add.sprite(4150,500, 'door').setScale(7,7);
+            portal.body.isSensor = true;
+            portal.body.isStatic = true;
+
+            this.matterCollision.addOnCollideActive({
+                objectA: player.mainBody,
+                objectB: portal,
+                callback: portalEnter,
+                context: this
+            });
+            function portalEnter() {
+                if(EnterKey.isDown) {
+                    currentMapNum = 2;
+                    // Scene reset variables
+                    health = 100;
+                    this.scene.restart();
+                }
+            }
+
+
+
         } else if(currentMapNum == 2) {
+
+            tempMap = map.createLayer("TempSolid", tileset, 0, 200);
+            tempMap.setScale(3,3);
+            tempMap.setSize(300,3);
+
+            tempMap.setCollisionByExclusion([-1]);
+            this.matter.world.convertTilemapLayer(tempMap);
+    
 
             // Essentials
             var bossHealth = this.add.text(270, 530, 'BOSS HEALTH', { fontSize: '15px', fill: '#FFFFFF' , fontFamily: 'Press-Start-2P' });
@@ -1660,8 +1721,8 @@ var config = {
     physics: { default: "matter", 
     matter:{
         debug: {
-            showBody: true,
-            showStaticBody: true
+            showBody: false,
+            showStaticBody: false
         }
     }},
     plugins: {
