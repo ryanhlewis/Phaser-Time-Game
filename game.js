@@ -1478,7 +1478,7 @@ class InGame extends Phaser.Scene {
             
             this.add.text(300, 2425, 'You can always press\nB to go back in time.', { fontSize: '32px', fill: '#FFFFFF',fontFamily: 'Press-Start-2P' });
             
-            this.add.text(4255, 1225, 'Go to the wishing\nwell with the coin...', { fontSize: '32px', fill: '#FFFFFF',fontFamily: 'Press-Start-2P' });
+            this.add.text(4260, 1250, 'Go make a wish...', { fontSize: '32px', fill: '#FFFFFF',fontFamily: 'Press-Start-2P' });
             
             this.add.text(2180, 1300, 'Find the hidden door...', { fontSize: '32px', fill: '#FFFFFF',fontFamily: 'Press-Start-2P' });
             
