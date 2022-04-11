@@ -13,6 +13,16 @@ Made by [Alyssa](https://github.com/AlyssaBurtscher), [Angela](https://github.co
 
 Here's a link to play the [latest version of our game](https://ryanhlewis.itch.io/time-trodden).
 
+## Run It Yourself
+
+You can also spin up a free Heroku dyno to try it out:
+
+[![Deploy](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy?template=https://github.com/ryanhlewis/Phaser-Time-Game)
+
+Or run it on [Repl.it](https://repl.it/):
+
+[![Run on Repl.it](https://repl.it/badge/github/socketio/chat-example)](https://repl.it/github/ryanhlewis/Phaser-Time-Game)
+
 ## Sprint 1
 
 To make a simple working prototype of our game, we added a player with movement, animations, a camera that follows him,
