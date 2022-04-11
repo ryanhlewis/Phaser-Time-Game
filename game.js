@@ -1766,6 +1766,7 @@ class InGame extends Phaser.Scene {
             player.setVelocityY(-5);
             player.anims.play('stand');
             player.body.ignoreGravity = true;
+            player.setDepth(5);
 
 
 
@@ -2106,8 +2107,8 @@ var config = {
     physics: { default: "matter", 
     matter:{
         debug: {
-            showBody: true,
-            showStaticBody: true
+            showBody: false,
+            showStaticBody: false
         }
     }},
     plugins: {
