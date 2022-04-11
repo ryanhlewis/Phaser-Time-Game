@@ -69,8 +69,8 @@ class LoadAssets extends Phaser.Scene {
         this.load.image('powerup-cup', 'assets/powerups/cup.png');
         this.load.image('powerup-potion', 'assets/powerups/potion.png');
         this.load.image('powerup-shield', 'assets/powerups/shield.png');
-        this.load.image('powerup-keycard', 'assets/powerups/newspaper.png');
-        this.load.image('powerup-jar', 'assets/powerups/light-jar1.png');
+        this.load.image('powerup-keycard', 'assets/powerups/key_01c.png');
+        this.load.image('powerup-coin', 'assets/powerups/coin_01d.png');
         
         // Misc.
         this.load.image("tiles","assets/tilesets/lab/lab.png");
@@ -85,6 +85,7 @@ class LoadAssets extends Phaser.Scene {
         this.load.spritesheet('portal', 'assets/spritesheets/time.png',{frameWidth:100, frameHeight: 100});
         this.load.spritesheet('pumpkin-dude', 'assets/spritesheets/pumpkin spritesheet.png',{frameWidth:18, frameHeight: 34});
         this.load.spritesheet('scientist', 'assets/spritesheets/scientist.png',{frameWidth:190, frameHeight: 285});
+        this.load.image('pillar', 'assets/maps/pillar.png')
 
         this.load.tilemapTiledJSON('map',"assets/maps/tilemap.json");
         
@@ -806,6 +807,7 @@ class InGame extends Phaser.Scene {
             var powerup = powerupbar.create(610 - currentPowerups.length*50, 30, collision.gameObjectB.type);
             console.log(collision.gameObjectB.type);
             powerup.setScale(3.2, 3.2);
+            console.log(collision.gameObjectB.type);
             currentPowerups.push(collision.gameObjectB.type);
             powerup.setScrollFactor(0);  
             
@@ -985,14 +987,6 @@ class InGame extends Phaser.Scene {
                 }
             }
             
-            this.blockOverlap = function(collision){
-                blockT = true;
-                console.log('Hello');
-            }
-            this.blockOverlapEnd = function(collision){
-                blockT = false;
-                console.log('Hi');
-            }
 
             this.matterCollision.addOnCollideActive({
                 objectA: this.enemies,
@@ -1054,16 +1048,18 @@ class InGame extends Phaser.Scene {
                 var textB = '';
                 if(textB == ''){
                     if(currentMapNum == 0){
-                        textB = this.add.text(3150, 800, 'You need a\nkeycard!', { fontSize: '32px', fill: '#FFFFFF',fontFamily: 'Press-Start-2P' });
+                        textB = this.add.text(3150, 800, 'You need\na key!', { fontSize: '32px', fill: '#FFFFFF',fontFamily: 'Press-Start-2P' });
                     }
                 }
-                if(currentPowerups.length > 0) {
+                var power = 'powerup-keycard';
+                if(currentMapNum == 1){
+                    power = 'powerup-coin';
+                }
+                if(currentPowerups.includes(power)) {
                     doorPrompt.destroy();
-                    if(textB != ''){
-                       textB.setVisible(false);
-                    }
+                    //textB.setText('');
                     blockT = false;
-                }
+                };
             }
             
             function falseBool() {
@@ -1482,7 +1478,27 @@ class InGame extends Phaser.Scene {
             
             this.add.text(300, 2425, 'You can always press\nB to go back in time.', { fontSize: '32px', fill: '#FFFFFF',fontFamily: 'Press-Start-2P' });
             
-            this.add.text(4255, 1225, 'Go to the wishing\nwell with the jar...', { fontSize: '32px', fill: '#FFFFFF',fontFamily: 'Press-Start-2P' });
+            this.add.text(4255, 1225, 'Go to the wishing\nwell with the coin...', { fontSize: '32px', fill: '#FFFFFF',fontFamily: 'Press-Start-2P' });
+            
+            this.add.text(2180, 1300, 'Find the hidden door...', { fontSize: '32px', fill: '#FFFFFF',fontFamily: 'Press-Start-2P' });
+            
+            var pillar = this.matter.add.image(1150, 1400, 'pillar').setScale(3,3);
+            pillar.body.isStatic = true;
+            pillar.body.isSensor = true;
+            
+            function pillarDestroy(){
+                pillar.destroy();
+            }
+            
+            this.matterCollision.addOnCollideActive({
+                objectA: player.mainBody,
+                objectB: pillar,
+                callback: pillarDestroy,
+                context: this
+            });
+            
+            
+
         
             createQuery(4170, 450);
 
