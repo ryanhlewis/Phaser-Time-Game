@@ -1,0 +1,22 @@
+{
+  "name": "Time-Trodden",
+  "description": "A game about breaking time.",
+  "website": "https://github.com/ryanhlewis/Phaser-Time-Game",
+  "repository": "https://github.com/ryanhlewis/Phaser-Time-Game",
+  "logo": "https://node-js-sample.herokuapp.com/node.svg",
+  "success_url": "/",
+  "keywords": [
+    "node",
+    "express",
+    "socket.io",
+    "realtime",
+    "websocket"
+  ],
+  "scripts": {
+  },
+  "addons": [
+  ],
+  "env": {
+    "BUILDPACK_URL": "https://github.com/heroku/heroku-buildpack-nodejs"
+  }
+}

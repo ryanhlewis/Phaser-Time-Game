@@ -28,7 +28,7 @@
                         {
                          "name":"type",
                          "type":"string",
-                         "value":"powerup-cup"
+                         "value":"powerup-coin"
                         }],
                  "rotation":0,
                  "type":"",
@@ -427,7 +427,7 @@
  "nextobjectid":21,
  "orientation":"orthogonal",
  "renderorder":"right-down",
- "tiledversion":"1.8.2",
+ "tiledversion":"1.8.1",
  "tileheight":16,
  "tilesets":[
         {
