@@ -6,9 +6,11 @@ import MultiKey from "./multikey.js";
 
 // Global Variables
 // TODO - Try to keep these to a minimum.
+var players;
+var enemyTarget;
 var player;
 var cursors;
-
+var socket;
 var vials;
 var scoreText;
 var timeText;
@@ -69,6 +71,7 @@ class LoadAssets extends Phaser.Scene {
         this.load.image('powerup-cup', 'assets/powerups/cup.png');
         this.load.image('powerup-potion', 'assets/powerups/potion.png');
         this.load.image('powerup-shield', 'assets/powerups/shield.png');
+
         this.load.image('powerup-keycard', 'assets/powerups/newspaper.png');
         this.load.image('powerup-jar', 'assets/powerups/light-jar1.png');
         
@@ -115,6 +118,7 @@ class LoadAssets extends Phaser.Scene {
         this.load.image('block', 'assets/maps/overlap.png');   
         this.load.image("logo", "assets/title.png");
         this.load.image("play_button", "assets/play.png");
+        this.load.image("join_button", "assets/join.png");
         this.load.image("options_button", "assets/options.png");
         this.load.image("hover", "assets/icons/10.png");
         
@@ -190,6 +194,34 @@ class MainMenu extends Phaser.Scene{
         playButton.on("pointerdown", ()=>{
             rref.scene.start("InGame");
         })
+
+
+        let joinButton = rref.add.image(rref.sys.game.config.width/2, rref.sys.game.config.height/2+150, "join_button").setScale(0.25);
+        
+        
+        
+        joinButton.setInteractive();
+        
+        joinButton.on("pointerover", ()=>{
+            hoverSprite.setVisible(1);
+            hoverSprite.x = joinButton.x - 150;
+            hoverSprite.y = joinButton.y;
+        })
+        
+        joinButton.on("pointerout", ()=>{
+            hoverSprite.setVisible(0);
+         }) 
+        
+        joinButton.on("pointerdown", ()=>{
+
+                //right popup
+
+            // Future- get input and type in multiplayer room key
+            // That's very low priority. Separate rooms might as well be a bug fix. They're unneccessary right now.
+
+            rref.scene.start("InGame");
+        })
+
 	}
 
 	update(){	
@@ -239,10 +271,9 @@ class InGame extends Phaser.Scene {
     create() {
 
         
-        
-        
-        
-        
+    
+
+
         
         // Reference, used for nested functions
         var ref = this;
@@ -282,7 +313,7 @@ class InGame extends Phaser.Scene {
         const mapArray = [
             new Map("level1",400,600,600, 3, 600,600),
             new Map("level2",400,600,725, 3, 440, 2300),
-            new Map("bosslevel",400,600,725, 3, 8000, 200),
+            new Map("bosslevel",400,600,725, 3, 400, 200),
         ]
         var currentMap = mapArray[currentMapNum];
 
@@ -391,8 +422,9 @@ class InGame extends Phaser.Scene {
 
         function onGround(collision) {
             // Detecting onGround for jumping
-            if(!collision.bodyB.isSensor)
+            if(!collision.bodyB.isSensor) {
                 player.onGround = true;
+            }
             // Detecting sensor ladder.
             else if (collision.bodyB.isLadder) {
                 if(rightInput.isDown() || leftInput.isDown())
@@ -438,7 +470,6 @@ class InGame extends Phaser.Scene {
           
 
         player.setDepth(5);
-
         
         // FUTURE- These are VERY similar functions for getting objects.
         // Write a method to automatically do most of the work.
@@ -481,6 +512,9 @@ class InGame extends Phaser.Scene {
             });
             var upperBody = Bodies.rectangle(0,-280, ew * 2, eh*0.5, {
                 chamfer: { radius: 10 },
+                // Update- disabled top of elevators to get rid of edge cases where players
+                // somehow get out of elevator, get stuck somewhere.
+                isSensor: true
             });
             var interactBody = Bodies.rectangle(0,-50, ew * 0.5, eh*0.5, {
                 isSensor: true
@@ -546,6 +580,9 @@ class InGame extends Phaser.Scene {
                 if(EnterKey.isDown) {
                     if(!elevatorInteracting) {
                         elevatorMove(collision.gameObjectB);
+
+                        socket.emit('elevator', 0);
+
                         //scoreText.setVisible(false);
                         collision.gameObjectB.query.destroy();
                         elevatorInteracting = true;
@@ -632,8 +669,12 @@ class InGame extends Phaser.Scene {
             }
 
         async function enemyfollow(badGuy){
-            var distance = badGuy.x - player.x;
+            try {
+            var distance = badGuy.x - players[enemyTarget].player.x;
             badGuy.flipX = distance > 0;
+            } catch(e) {
+                // Try until enemy target is defined--
+            }
             badGuy.setVelocityX(Math.random()*(1.5) * (badGuy.flipX ? 1 : -1) + (badGuy.flipX ? -2 : 2));
             badGuy.body.velocity.y = Math.random()*5;
                 
@@ -970,6 +1011,7 @@ class InGame extends Phaser.Scene {
                 context: this
             });
 
+            // Precise attacks- only register if it happened immediately.
             this.checkHitRight = function(collision) {
                 if(attackInput.isDown()) {
                     if(!player.flipX) {
@@ -1104,6 +1146,10 @@ class InGame extends Phaser.Scene {
                 usedDoor = true;
                 player.x = collision.gameObjectB.getData('teleport')[0];
                 player.y = collision.gameObjectB.getData('teleport')[1];
+
+                // Send networked door position--
+                socket.emit('teleport', [socket.id, player.x,player.y]);
+
                 this.cameras.main.startFollow(player);
                 this.cameras.main.midPoint.y = player.y + 300;
                 doorReset();
@@ -1472,6 +1518,10 @@ class InGame extends Phaser.Scene {
             });
             function portalEnter() {
                 currentMapNum = 1;
+
+                socket.emit('newmap', [socket.id,1]);
+
+
                 // Scene reset variables
                 health = 100;
                 this.scene.restart();
@@ -1501,6 +1551,9 @@ class InGame extends Phaser.Scene {
             function portalEnter() {
                 if(EnterKey.isDown) {
                     currentMapNum = 2;
+
+                    socket.emit('newmap', [socket.id,2]);
+
                     // Scene reset variables
                     health = 100;
                     this.scene.restart();
@@ -1644,12 +1697,300 @@ class InGame extends Phaser.Scene {
             //scale the bar
             bar.scaleX = percentage/100;
         }
+
+
+
+
+
+
+
+
+
+                
+        // Networking--
+        // I'm doing it down here so I can have access to every defined variable, door, etc.
+        // Might recheck for existence of things, but it's better to keep the code in one place--
+
+        function makePlayer(player) {
+            player.setSize(16,16);
+            player.setOrigin(0.5,0.28);
+            player.body.centerOffset.y = 22;
+    
+            var { width: w, height: h } = player;
+            player.mainBody = Bodies.rectangle(0,0, w * 2, h*3, {
+              chamfer: { radius: 10 }
+            });
+            player.bottom = Bodies.rectangle(0, 10, w * 1, h*2 + 20, { isSensor: true }),
+            player.left = Bodies.rectangle(-w * 1.35, 1, 70, h * 1.5, { isSensor: true }),
+            player.right = Bodies.rectangle(w * 1.35, 1, 70, h * 1.5, { isSensor: true })
+            var compoundBody1 = Body.create({
+              parts: [
+                player.mainBody,
+                player.bottom,
+                player.left,
+                player.right
+              ],
+              frictionStatic: 0,
+              frictionAir: 0.02,
+              friction: 0.1,
+              // The offset here allows us to control where the sprite is placed relative to the
+              // matter body's x and y - here we want the sprite centered over the matter body.
+              render: { sprite: { xOffset: 0, yOffset: 0 } }
+            });
+            player.setExistingBody(compoundBody1).setFixedRotation();
+            player.x = currentMap.playerSpawnX;
+            player.y = currentMap.playerSpawnY;
+            // Note- this origin is different from normal player origin---
+            //player.setOrigin(1.5,1.9);
+            player.setOrigin(0.5,0.6);
+            player.body.centerOffset.y = 22;
+            player.setVelocityX(-5);
+            player.setVelocityY(-5);
+            player.anims.play('stand');
+            player.body.ignoreGravity = true;
+
+
+
+            
+        function onGround(collision) {
+            // Detecting onGround for jumping
+            if(!collision.bodyB.isSensor)
+                player.onGround = true;
+            // Detecting sensor ladder.
+            else if (collision.bodyB.isLadder) {
+                if(rightInput.isDown() || leftInput.isDown())
+                    player.allowGravity = true;
+                if(jumpInput.isDown()) {
+                    player.allowGravity = false;
+                    player.setVelocityY(-5);
+                }
+            }
+        }
+
+        function resetTouching() {
+            player.onGround = false;
+        }
+
+        ref.matter.world.on("beforeupdate", resetTouching, ref);
+
+        ref.matterCollision.addOnCollideStart({
+            objectA: player.bottom,
+            callback: onGround,
+            context: ref
+          });
+        ref.matterCollision.addOnCollideActive({
+            objectA: player.bottom,
+            callback: onGround,
+            context: ref
+          });
+
+
+          // Add door, puzzle colliders--
+
+        ref.matterCollision.addOnCollideActive({
+            objectA: player.bottom,
+            objectB: ref.buttons,
+            callback: buttonPress,
+            context: ref
+        });
+
+        ref.matterCollision.addOnCollideActive({
+            objectA: player,
+            objectB: powerups,
+            callback: createPowerUp,
+            context: this
+        });
+
+        // Code to force players into worlds together is present wherever we restart the scene with a new map num..
+
+        // As for player death code, we will have to tweak it with this multiplayer......
+        player.attacking = false;
+
+            // Precise attacks- only register if it happened immediately.
+            ref.checkHitRight = function(collision) {
+                if(player.attacking) {
+                    if(!player.flipX) {
+                        ref.hitEntity(collision);
+                    }
+                }
+            }
+            ref.checkHitLeft = function(collision) {
+                if(player.attacking) {
+                    if(player.flipX) {
+                        ref.hitEntity(collision);
+                    }
+                }
+            }
+
+            ref.matterCollision.addOnCollideActive({
+                objectA: ref.enemies,
+                objectB: player.left,
+                callback: ref.checkHitLeft,
+                context: ref
+            });
+
+            ref.matterCollision.addOnCollideActive({
+                objectA: ref.enemies,
+                objectB: player.right,
+                callback: ref.checkHitRight,
+                context: ref
+            });
+
+
+        }
+
+        // Don't recreate the websocket.
+        if(socket !== undefined) {
+
+            // Recreate the players in the array
+            console.log(players);
+
+            // Recreate the players
+            Object.keys(players).forEach(play => {
+                
+                if(play != socket.id) {
+
+                    var player = ref.matter.add.sprite(400, 900, 'player').setScale(3,3);
+                    makePlayer(player);
+                    players[play].player.destroy();
+                    players[play].player = player;
+
+                }
+
+            });
+
+
+
+        } else 
+        {
+        socket = io();
+        players = {}
+        enemyTarget = socket.id;
+
+        // The player and its settings
+        class Player {
+            constructor(player) {
+            this.player = player;
+            this.input = null;
+            }
+        }
+
+        // Must get the unique ID after they connect to server
+        socket.on('joined', function() {
+            players[socket.id] = new Player(player);
+            socket.emit('playerjoin', socket.id);
+        });
+
+        socket.on('playerjoinedReply',function(msg) {
+            // Send reply
+            socket.emit('sendPlayer',[msg,socket.id,players[socket.id].player.x,players[socket.id].player.y]);
+            
+            // Create new player
+            console.log("player joined:" + msg);
+            var player = ref.matter.add.sprite(400, 900, 'player').setScale(3,3);
+            makePlayer(player);
+            var playerObj = new Player(player);
+         
+            players[msg] = playerObj;
+        });
+
+        socket.on('playerjoined',function(msg) {
+            // Create new player
+            console.log("player joined:" + msg[0]);
+            var player = ref.matter.add.sprite(400, 900, 'player').setScale(3,3);
+            makePlayer(player);
+            var playerObj = new Player(player);
+
+            players[msg[0]] = playerObj;
+        });
+
+        socket.on('movement', function(msg) {
+            //console.log(msg);
+            if(players[msg[0]] !== undefined )
+            inputFunction(players[msg[0]].player,msg[1]);
+        });
+
+        socket.on('teleport', function(msg) {
+            console.log(msg);
+            if(players[msg[0]] !== undefined ) {
+                inputFunction(players[msg[0]].player,msg[1],msg[2]);
+                players[msg[0]].player.x = msg[1];
+                players[msg[0]].player.y = msg[2];
+            }
+        });
+
+        socket.on('elevator', function(msg) {
+            console.log(msg);
+            console.log("moving elevator");
+
+            elevatorMove(ref.elevators[msg]);
+            elevatorInteracting = true;
+
+            //scoreText.setVisible(false);
+            ref.elevators[msg].query.destroy();
+        });
+
+        socket.on('newmap', function(msg) {
+            currentMapNum = msg;
+            // Scene reset variables
+            health = 100;
+            ref.scene.restart();
+        });
+
+        socket.on('enemytarget', function(msg) {
+            console.log("Enemies are now targetting " + msg);
+            enemyTarget = msg;
+        });
+
+        function inputFunction(player,x,y) {
+            if(player.attacking) {
+                player.anims.play('attack',true);
+                return;
+            }
+            if (Math.floor(x) + 2 < player.x)
+            {
+                //player.setVelocityX(-5);
+                player.flipX = true;
+                if(player.onGround)
+                player.anims.play('walk', true);
+            }
+            else if (Math.floor(x) - 2 > player.x)
+            {
+                //player.setVelocityX(5);
+                player.flipX = false;
+                if(player.onGround)
+                player.anims.play('walk', true);
+            }
+            else 
+            {
+                //player.setVelocityX(0);
+                if(player.onGround)
+                player.anims.play('stand');
+            }
         
+            if (Math.floor(y) + 5 < player.y)
+            {
+                //player.setVelocityY(-10);
+                player.anims.play('jump', true);
+            }
+        }
+        
+        socket.on('attack', function (playerId) {
+            players[playerId].player.attacking = true;
+            runFunction1( function() { players[playerId].player.attacking = false } , 200);
+        });
+
+        socket.on('disconnected', function (playerId) {
+            players[playerId].player.destroy();
+            delete players[playerId];
+        });
+    }
 
     }
 
-    update() {
 
+    update() {
+console.log(players);
         // PARALLAX EFFECT
         if((player.anims.currentAnim.key == "walk" || player.anims.currentAnim.key == "jump") && savedCameraPos != this.cameras.main.scrollX) {
             if(player.flipX) {
@@ -1666,24 +2007,24 @@ class InGame extends Phaser.Scene {
 
 
         // PLAYER MOVEMENT       
-        if(!player.onGround && !attackInput.isDown())
+        if(!player.onGround && !attacked)
             player.anims.play('jump',true);
-        
         
         if(leftInput.isDown()) {
             player.flipX = true;
             player.setVelocityX(-5);
-            if(player.onGround&& !attackInput.isDown())
+            if(player.onGround&& !attacked)
             player.anims.play('walk',true);
         } else if(rightInput.isDown()) {
             player.flipX = false;
             player.setVelocityX(5);
-            if(player.onGround&& !attackInput.isDown())
+            if(player.onGround&& !attacked)
             player.anims.play('walk',true);
         } else {
             player.setVelocityX(0);
-            if(player.onGround && !attackInput.isDown())
+            if(player.onGround && !attacked) {
             player.anims.play('stand');
+            }
         }
 
         if(jumpInput.isDown() && player.onGround) {
@@ -1692,9 +2033,14 @@ class InGame extends Phaser.Scene {
         }
 
         if(attackInput.isDown()) {
-            player.anims.play('attack',true);
-            console.log(player.x);
-            console.log(player.y);
+            if(!attacked) {
+                attacked = true;
+
+                socket.emit('attack', socket.id);
+
+                player.anims.play('attack');
+                runFunction1( function() { attacked = false } , 1000);
+            }
         }
         
         if(health <= 0) {
@@ -1705,10 +2051,31 @@ class InGame extends Phaser.Scene {
             player.setVelocityX(0);
             player.setVelocityY(0);
             player.anims.play('stand');
-        }
+        } 
+
+
+        socket.emit('teleport', [socket.id,Math.floor(player.x),Math.floor(player.y)]);
+
+
         }
 
+
     }
+    var attacked = false;
+
+
+        // Some functional programming to help async tasks
+        async function runFunction1(func,ms) {
+            await new Promise((r) =>
+                setTimeout(
+                    () =>
+                        new (function () {
+                            func();
+                        })(),
+                    ms
+                )
+            );
+        }
 
 // ACTUAL GAME START
 // The previous classes have defined the scenes,
@@ -1721,8 +2088,8 @@ var config = {
     physics: { default: "matter", 
     matter:{
         debug: {
-            showBody: false,
-            showStaticBody: false
+            showBody: true,
+            showStaticBody: true
         }
     }},
     plugins: {
