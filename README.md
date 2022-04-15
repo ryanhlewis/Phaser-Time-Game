@@ -51,5 +51,13 @@ To showcase a Pre-Alpha, we made the puzzle fully functional and go to an Elevat
 
 To mark a half-way point, we playtested everything with the help of fellow students, and went back and fixed a majority of bugs. In doing this, we added a Powerups UI, as well as their pickup counterpart, fixed colliders everywhere in the game, from stairs, to enemies, to buttons, as well as added new enemy functionality: targetting the player. Also, we added a "Death Screen" which prompts the player to respawn. Here's a permanent link to play [Sprint 5: Half-Way](//v6p9d9t4.ssl.hwcdn.net/html/5495801/index.html).
 
+<img align="left" src="https://user-images.githubusercontent.com/76540311/163595141-4d22b7f8-30dd-4666-a4ae-98154b4c7ed2.gif" >
 
+![Sprint3](https://user-images.githubusercontent.com/76540311/163595140-c2f8578c-1959-4bcf-8179-aeecf90dc7fa.gif)
+
+## Sprint 6
+
+![Sprint4](https://user-images.githubusercontent.com/76540311/163595138-f9f94f73-0a9f-46d1-8ee2-408d41b732c3.gif)
+
+## Sprint 7
 
