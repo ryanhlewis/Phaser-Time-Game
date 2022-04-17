@@ -107,7 +107,7 @@
         {
          "columns":16,
          "firstgid":1,
-         "image":"Phaser-Time-Game\/All Assets\/tilesets\/sandland\/SANDLAND.png",
+         "image":"..\/tilesets\/SANDLAND.png",
          "imageheight":224,
          "imagewidth":256,
          "margin":0,
