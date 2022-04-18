@@ -47,7 +47,7 @@ var poweruplevel = 0;
 
 
 
-var currentMapNum = 2;
+var currentMapNum = 3;
 
 
 
@@ -92,6 +92,9 @@ class LoadAssets extends Phaser.Scene {
         this.load.spritesheet('portal', 'assets/spritesheets/time.png',{frameWidth:100, frameHeight: 100});
         this.load.spritesheet('pumpkin-dude', 'assets/spritesheets/pumpkin spritesheet.png',{frameWidth:18, frameHeight: 34});
         this.load.spritesheet('scientist', 'assets/spritesheets/scientist.png',{frameWidth:190, frameHeight: 285});
+        this.load.spritesheet('crab', 'assets/spritesheets/crab.png',{frameWidth:20, frameHeight: 20});
+        this.load.spritesheet('skeleton', 'assets/spritesheets/skeleton.png',{frameWidth:32, frameHeight: 32});
+
         this.load.image('pillar', 'assets/maps/pillar.png')
 
         this.load.tilemapTiledJSON('map',"assets/maps/tilemap.json");
@@ -136,8 +139,8 @@ class LoadAssets extends Phaser.Scene {
         //Music
         this.load.audio('music0', 'assets/music/out-of-time-15474.mp3');
         this.load.audio('music1', 'assets/music/knights-of-camelot-8038.mp3');
-        this.load.audio('music2', 'assets/chinese-wind-15264.mp3');
-        this.load.audio('music3', 'assets/action-drums-sport-106841.mp3');
+        this.load.audio('music2', 'assets/music/chinese-wind-15264.mp3');
+        this.load.audio('music3', 'assets/music/action-drums-sport-106841.mp3');
     
         
         this.load.image('bosslevel-back', 'assets/maps/transparent.png');
@@ -325,7 +328,7 @@ class InGame extends Phaser.Scene {
             new Map("level1",400,600,600, 3, 600,600),
             new Map("level2",400,600,725, 3, 440, 2300),
             new Map("bosslevel",400,600,725, 3, 400, 200),
-            new Map("level3",400,600,725, 3, 400, 200)
+            new Map("level3",700,600,725, 3, 300, 1800)
         ]
         var currentMap = mapArray[currentMapNum];
 
@@ -1651,6 +1654,9 @@ class InGame extends Phaser.Scene {
 
             createBoss('pumpkin-dude',10,1970,900);
             createBoss('scientist',1.4,8000,900);
+            createBoss('crab',10,6000,2000);
+            createBoss('skeleton',10,2100,1000);
+
 
 
 
@@ -1743,7 +1749,8 @@ class InGame extends Phaser.Scene {
             // EnemyRun is just a mindless back and forth script.
             // EnemyFollow will follow player until a cooldown, which will reset if they hit.
             //enemyrun(enemy);
-            enemyfollow(enemy);
+            //enemyfollow(enemy);
+            enemyrun(enemy);
 
             
 
