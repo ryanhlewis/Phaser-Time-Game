@@ -126,10 +126,11 @@ class LoadAssets extends Phaser.Scene {
         this.load.image("hover", "assets/icons/10.png");
         
         
-        
-        
-        
-        
+        //Music
+        this.load.audio('music0', 'assets/music/out-of-time-15474.mp3');
+        this.load.audio('music1', 'assets/music/knights-of-camelot-8038.mp3');
+        this.load.audio('music2', 'assets/chinese-wind-15264.mp3');
+        this.load.audio('music3', 'assets/action-drums-sport-106841.mp3');
     
         
         this.load.image('bosslevel-back', 'assets/maps/transparent.png');
@@ -630,6 +631,12 @@ class InGame extends Phaser.Scene {
                     console.log(chosenElevator);
                 }
         }
+        
+        //Music
+        var s = 'music' + currentMapNum;
+        var backgroundMusic = this.add.audio(s);
+        backgroundMusic.loop = true;
+        backgroundMusic.play();
 
 
         // Different Types of Enemy AIs
