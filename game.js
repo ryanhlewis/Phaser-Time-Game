@@ -47,7 +47,7 @@ var poweruplevel = 0;
 
 
 
-var currentMapNum = 3;
+var currentMapNum = 2;
 
 
 
@@ -328,7 +328,7 @@ class InGame extends Phaser.Scene {
             new Map("level1",400,600,600, 3, 600,600),
             new Map("level2",400,600,725, 3, 440, 2300),
             new Map("bosslevel",400,600,725, 3, 400, 200),
-            new Map("level3",700,600,725, 3, 300, 1800)
+            new Map("level3",500,600,725, 3, 300, 1800)
         ]
         var currentMap = mapArray[currentMapNum];
 
@@ -1475,6 +1475,8 @@ class InGame extends Phaser.Scene {
         });*/
         var tempCol;
         this.input.keyboard.on('keydown-G', function (event) {   
+            console.log(player.x);
+            console.log(player.y);
             // GOD-MODE
             godMode = !godMode;
             player.body.allowGravity = godMode;
@@ -1593,9 +1595,9 @@ class InGame extends Phaser.Scene {
             });
             function portalEnter() {
                 if(EnterKey.isDown) {
-                    currentMapNum = 2;
+                    currentMapNum = 3;
 
-                    socket.emit('newmap', [socket.id,2]);
+                    socket.emit('newmap', [socket.id,3]);
 
                     // Scene reset variables
                     health = 100;
@@ -1654,8 +1656,8 @@ class InGame extends Phaser.Scene {
 
             createBoss('pumpkin-dude',10,1970,900);
             createBoss('scientist',1.4,8000,900);
-            createBoss('crab',10,6000,2000);
-            createBoss('skeleton',10,2100,1000);
+            createBoss('crab',10,7000,2500);
+            createBoss('skeleton',10,2500,2000);
 
 
 
@@ -1677,6 +1679,30 @@ class InGame extends Phaser.Scene {
             // Set listeners for boss health at certain amounts--
 
 
+
+
+        } else if(currentMapNum == 3) {
+
+
+            var portal = this.matter.add.sprite(1847,1050, 'door').setScale(7,7);
+            portal.body.isSensor = true;
+            portal.body.isStatic = true;
+
+            this.matterCollision.addOnCollideActive({
+                objectA: player.mainBody,
+                objectB: portal,
+                callback: portalEnter,
+                context: this
+            });
+            function portalEnter() {
+                    currentMapNum = 2;
+
+                    socket.emit('newmap', [socket.id,2]);
+
+                    // Scene reset variables
+                    health = 100;
+                    this.scene.restart();
+            }
 
 
         }
@@ -1710,6 +1736,7 @@ class InGame extends Phaser.Scene {
             enemy.x = x;
             enemy.y = y;
 
+            enemy.enemySprite = enemySprite;
 
             
             ref.matterCollision.addOnCollideActive({
@@ -1792,7 +1819,9 @@ class InGame extends Phaser.Scene {
             enemy.x = x;
             enemy.y = y;
 
-            
+            enemy.enemySprite = enemySprite;
+
+
             ref.matterCollision.addOnCollideActive({
                 objectA: enemy,
                 objectB: player.left,

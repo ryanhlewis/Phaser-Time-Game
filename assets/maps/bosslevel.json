@@ -303,6 +303,342 @@
                  "width":0,
                  "x":2862.66666666667,
                  "y":138.666666666667
+                }, 
+                {
+                 "height":0,
+                 "id":27,
+                 "name":"",
+                 "point":true,
+                 "properties":[
+                        {
+                         "name":"enemytype",
+                         "type":"string",
+                         "value":"crab"
+                        }, 
+                        {
+                         "name":"scale",
+                         "type":"string",
+                         "value":"3"
+                        }, 
+                        {
+                         "name":"zAI",
+                         "type":"int",
+                         "value":0
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":2292,
+                 "y":1926
+                }, 
+                {
+                 "height":0,
+                 "id":30,
+                 "name":"",
+                 "point":true,
+                 "properties":[
+                        {
+                         "name":"enemytype",
+                         "type":"string",
+                         "value":"crab"
+                        }, 
+                        {
+                         "name":"scale",
+                         "type":"string",
+                         "value":"3"
+                        }, 
+                        {
+                         "name":"zAI",
+                         "type":"int",
+                         "value":0
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":2624,
+                 "y":1878
+                }, 
+                {
+                 "height":0,
+                 "id":31,
+                 "name":"",
+                 "point":true,
+                 "properties":[
+                        {
+                         "name":"enemytype",
+                         "type":"string",
+                         "value":"crab"
+                        }, 
+                        {
+                         "name":"scale",
+                         "type":"string",
+                         "value":"3"
+                        }, 
+                        {
+                         "name":"zAI",
+                         "type":"int",
+                         "value":0
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":2062,
+                 "y":1834
+                }, 
+                {
+                 "height":0,
+                 "id":32,
+                 "name":"",
+                 "point":true,
+                 "properties":[
+                        {
+                         "name":"enemytype",
+                         "type":"string",
+                         "value":"crab"
+                        }, 
+                        {
+                         "name":"scale",
+                         "type":"string",
+                         "value":"3"
+                        }, 
+                        {
+                         "name":"zAI",
+                         "type":"int",
+                         "value":0
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":2756,
+                 "y":1946
+                }, 
+                {
+                 "height":0,
+                 "id":33,
+                 "name":"",
+                 "point":true,
+                 "properties":[
+                        {
+                         "name":"enemytype",
+                         "type":"string",
+                         "value":"skeleton"
+                        }, 
+                        {
+                         "name":"scale",
+                         "type":"string",
+                         "value":"3"
+                        }, 
+                        {
+                         "name":"zAI",
+                         "type":"int",
+                         "value":0
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":912,
+                 "y":688
+                }, 
+                {
+                 "height":0,
+                 "id":34,
+                 "name":"",
+                 "point":true,
+                 "properties":[
+                        {
+                         "name":"enemytype",
+                         "type":"string",
+                         "value":"skeleton"
+                        }, 
+                        {
+                         "name":"scale",
+                         "type":"string",
+                         "value":"3"
+                        }, 
+                        {
+                         "name":"zAI",
+                         "type":"int",
+                         "value":0
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":640,
+                 "y":778
+                }, 
+                {
+                 "height":0,
+                 "id":35,
+                 "name":"",
+                 "point":true,
+                 "properties":[
+                        {
+                         "name":"enemytype",
+                         "type":"string",
+                         "value":"skeleton"
+                        }, 
+                        {
+                         "name":"scale",
+                         "type":"string",
+                         "value":"3"
+                        }, 
+                        {
+                         "name":"zAI",
+                         "type":"int",
+                         "value":0
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":1086.66666666667,
+                 "y":722.666666666667
+                }, 
+                {
+                 "height":0,
+                 "id":36,
+                 "name":"",
+                 "point":true,
+                 "properties":[
+                        {
+                         "name":"enemytype",
+                         "type":"string",
+                         "value":"skeleton"
+                        }, 
+                        {
+                         "name":"scale",
+                         "type":"string",
+                         "value":"3"
+                        }, 
+                        {
+                         "name":"zAI",
+                         "type":"int",
+                         "value":0
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":1063.33333333333,
+                 "y":766.666666666667
+                }, 
+                {
+                 "height":0,
+                 "id":37,
+                 "name":"",
+                 "point":true,
+                 "properties":[
+                        {
+                         "name":"enemytype",
+                         "type":"string",
+                         "value":"skeleton"
+                        }, 
+                        {
+                         "name":"scale",
+                         "type":"string",
+                         "value":"3"
+                        }, 
+                        {
+                         "name":"zAI",
+                         "type":"int",
+                         "value":0
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":1674.66666666667,
+                 "y":670
+                }, 
+                {
+                 "height":0,
+                 "id":38,
+                 "name":"",
+                 "point":true,
+                 "properties":[
+                        {
+                         "name":"enemytype",
+                         "type":"string",
+                         "value":"skeleton"
+                        }, 
+                        {
+                         "name":"scale",
+                         "type":"string",
+                         "value":"3"
+                        }, 
+                        {
+                         "name":"zAI",
+                         "type":"int",
+                         "value":0
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":1396,
+                 "y":1324
+                }, 
+                {
+                 "height":0,
+                 "id":39,
+                 "name":"",
+                 "point":true,
+                 "properties":[
+                        {
+                         "name":"enemytype",
+                         "type":"string",
+                         "value":"skeleton"
+                        }, 
+                        {
+                         "name":"scale",
+                         "type":"string",
+                         "value":"3"
+                        }, 
+                        {
+                         "name":"zAI",
+                         "type":"int",
+                         "value":0
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":734.666666666667,
+                 "y":360.333333333333
+                }, 
+                {
+                 "height":0,
+                 "id":40,
+                 "name":"",
+                 "point":true,
+                 "properties":[
+                        {
+                         "name":"enemytype",
+                         "type":"string",
+                         "value":"skeleton"
+                        }, 
+                        {
+                         "name":"scale",
+                         "type":"string",
+                         "value":"3"
+                        }, 
+                        {
+                         "name":"zAI",
+                         "type":"int",
+                         "value":0
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":861,
+                 "y":329.666666666667
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -411,7 +747,7 @@
          "y":0
         }],
  "nextlayerid":13,
- "nextobjectid":27,
+ "nextobjectid":42,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.8.2",
@@ -434,7 +770,6 @@
                  "objectgroup":
                     {
                      "draworder":"index",
-                     "id":2,
                      "name":"",
                      "objects":[
                             {
@@ -460,7 +795,6 @@
                  "objectgroup":
                     {
                      "draworder":"index",
-                     "id":2,
                      "name":"",
                      "objects":[
                             {
@@ -486,7 +820,6 @@
                  "objectgroup":
                     {
                      "draworder":"index",
-                     "id":2,
                      "name":"",
                      "objects":[
                             {
@@ -512,7 +845,6 @@
                  "objectgroup":
                     {
                      "draworder":"index",
-                     "id":2,
                      "name":"",
                      "objects":[
                             {
@@ -538,7 +870,6 @@
                  "objectgroup":
                     {
                      "draworder":"index",
-                     "id":2,
                      "name":"",
                      "objects":[
                             {
@@ -564,7 +895,6 @@
                  "objectgroup":
                     {
                      "draworder":"index",
-                     "id":2,
                      "name":"",
                      "objects":[
                             {
@@ -590,7 +920,6 @@
                  "objectgroup":
                     {
                      "draworder":"index",
-                     "id":2,
                      "name":"",
                      "objects":[
                             {
@@ -616,7 +945,6 @@
                  "objectgroup":
                     {
                      "draworder":"index",
-                     "id":2,
                      "name":"",
                      "objects":[
                             {
@@ -642,7 +970,6 @@
                  "objectgroup":
                     {
                      "draworder":"index",
-                     "id":2,
                      "name":"",
                      "objects":[
                             {
@@ -668,7 +995,6 @@
                  "objectgroup":
                     {
                      "draworder":"index",
-                     "id":2,
                      "name":"",
                      "objects":[
                             {
@@ -694,7 +1020,6 @@
                  "objectgroup":
                     {
                      "draworder":"index",
-                     "id":2,
                      "name":"",
                      "objects":[
                             {
@@ -720,7 +1045,6 @@
                  "objectgroup":
                     {
                      "draworder":"index",
-                     "id":2,
                      "name":"",
                      "objects":[
                             {
@@ -746,7 +1070,6 @@
                  "objectgroup":
                     {
                      "draworder":"index",
-                     "id":2,
                      "name":"",
                      "objects":[
                             {
@@ -772,7 +1095,6 @@
                  "objectgroup":
                     {
                      "draworder":"index",
-                     "id":2,
                      "name":"",
                      "objects":[
                             {
@@ -798,7 +1120,6 @@
                  "objectgroup":
                     {
                      "draworder":"index",
-                     "id":2,
                      "name":"",
                      "objects":[
                             {
@@ -824,7 +1145,6 @@
                  "objectgroup":
                     {
                      "draworder":"index",
-                     "id":2,
                      "name":"",
                      "objects":[
                             {
@@ -975,7 +1295,6 @@
                  "objectgroup":
                     {
                      "draworder":"index",
-                     "id":2,
                      "name":"",
                      "objects":[
                             {
@@ -1001,7 +1320,6 @@
                  "objectgroup":
                     {
                      "draworder":"index",
-                     "id":2,
                      "name":"",
                      "objects":[
                             {
@@ -1397,7 +1715,6 @@
                  "objectgroup":
                     {
                      "draworder":"index",
-                     "id":2,
                      "name":"",
                      "objects":[
                             {
@@ -1440,7 +1757,6 @@
                  "objectgroup":
                     {
                      "draworder":"index",
-                     "id":2,
                      "name":"",
                      "objects":[
                             {
@@ -1483,7 +1799,6 @@
                  "objectgroup":
                     {
                      "draworder":"index",
-                     "id":2,
                      "name":"",
                      "objects":[
                             {
@@ -1526,7 +1841,6 @@
                  "objectgroup":
                     {
                      "draworder":"index",
-                     "id":2,
                      "name":"",
                      "objects":[
                             {
@@ -1569,7 +1883,6 @@
                  "objectgroup":
                     {
                      "draworder":"index",
-                     "id":2,
                      "name":"",
                      "objects":[
                             {
@@ -1608,7 +1921,6 @@
                  "objectgroup":
                     {
                      "draworder":"index",
-                     "id":2,
                      "name":"",
                      "objects":[
                             {
@@ -1727,7 +2039,6 @@
                  "objectgroup":
                     {
                      "draworder":"index",
-                     "id":2,
                      "name":"",
                      "objects":[
                             {
@@ -1766,7 +2077,6 @@
                  "objectgroup":
                     {
                      "draworder":"index",
-                     "id":2,
                      "name":"",
                      "objects":[
                             {
@@ -1805,7 +2115,6 @@
                  "objectgroup":
                     {
                      "draworder":"index",
-                     "id":2,
                      "name":"",
                      "objects":[
                             {
