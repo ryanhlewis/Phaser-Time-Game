@@ -6,6 +6,7 @@ import MultiKey from "./multikey.js";
 
 // Global Variables
 // TODO - Try to keep these to a minimum.
+var healthBar;
 var players;
 var enemyTarget;
 var player;
@@ -46,7 +47,7 @@ var poweruplevel = 0;
 
 
 
-var currentMapNum = 0;
+var currentMapNum = 3;
 
 
 
@@ -91,6 +92,9 @@ class LoadAssets extends Phaser.Scene {
         this.load.spritesheet('portal', 'assets/spritesheets/time.png',{frameWidth:100, frameHeight: 100});
         this.load.spritesheet('pumpkin-dude', 'assets/spritesheets/pumpkin spritesheet.png',{frameWidth:18, frameHeight: 34});
         this.load.spritesheet('scientist', 'assets/spritesheets/scientist.png',{frameWidth:190, frameHeight: 285});
+        this.load.spritesheet('crab', 'assets/spritesheets/crab.png',{frameWidth:20, frameHeight: 20});
+        this.load.spritesheet('skeleton', 'assets/spritesheets/skeleton.png',{frameWidth:32, frameHeight: 32});
+
         this.load.image('pillar', 'assets/maps/pillar.png')
 
         this.load.tilemapTiledJSON('map',"assets/maps/tilemap.json");
@@ -98,12 +102,14 @@ class LoadAssets extends Phaser.Scene {
         // Tiles
         this.load.image("level1-tiles","assets/tilesets/custom/level1.png");
         this.load.image("level2-tiles","assets/tilesets/custom/level2.png");
+        this.load.image("level3-tiles","assets/tilesets/custom/level3.png");
         this.load.image("bosslevel-tiles","assets/tilesets/custom/bosslevel.png");
 
 
         // Maps
         this.load.tilemapTiledJSON('level1-map',"assets/maps/level1.json");
         this.load.tilemapTiledJSON('level2-map',"assets/maps/level2.json");
+        this.load.tilemapTiledJSON('level3-map',"assets/maps/level3.json");
         this.load.tilemapTiledJSON('bosslevel-map',"assets/maps/bosslevel.json");
 
 
@@ -117,7 +123,10 @@ class LoadAssets extends Phaser.Scene {
 		this.load.image('level2-middle', 'assets/maps/transparent.png');
 		this.load.image('level2-front', 'assets/maps/transparent.png');
         this.load.image('level2-background', 'assets/maps/Level2 Background.png')
-
+        this.load.image('level3-back', 'assets/maps/Level2 Background.png');
+		this.load.image('level3-middle', 'assets/maps/transparent.png');
+		this.load.image('level3-front', 'assets/maps/transparent.png');
+        this.load.image('level3-background', 'assets/maps/Level2 Background.png')
         
         this.load.image('block', 'assets/maps/overlap.png');   
         this.load.image("logo", "assets/title.png");
@@ -130,8 +139,8 @@ class LoadAssets extends Phaser.Scene {
         //Music
         this.load.audio('music0', 'assets/music/out-of-time-15474.mp3');
         this.load.audio('music1', 'assets/music/knights-of-camelot-8038.mp3');
-        this.load.audio('music2', 'assets/chinese-wind-15264.mp3');
-        this.load.audio('music3', 'assets/action-drums-sport-106841.mp3');
+        this.load.audio('music2', 'assets/music/chinese-wind-15264.mp3');
+        this.load.audio('music3', 'assets/music/action-drums-sport-106841.mp3');
     
         
         this.load.image('bosslevel-back', 'assets/maps/transparent.png');
@@ -319,6 +328,7 @@ class InGame extends Phaser.Scene {
             new Map("level1",400,600,600, 3, 600,600),
             new Map("level2",400,600,725, 3, 440, 2300),
             new Map("bosslevel",400,600,725, 3, 400, 200),
+            new Map("level3",700,600,725, 3, 300, 1800)
         ]
         var currentMap = mapArray[currentMapNum];
 
@@ -652,7 +662,7 @@ class InGame extends Phaser.Scene {
             pumpkin.body.velocity.y = Math.random()*5;
             
             await new Promise((r) =>
-            setTimeout(
+            pumpkin.routine = setTimeout(
                 () =>
                     new (function () {
                         enemyleftrun(pumpkin);
@@ -670,7 +680,7 @@ class InGame extends Phaser.Scene {
                 pumpkin.body.velocity.y = Math.random()*5;
                 
                 await new Promise((r) =>
-                    setTimeout(
+                    pumpkin.routine = setTimeout(
                     () =>
                     new (function () {
                             pumpkin.flipX = false;
@@ -692,7 +702,7 @@ class InGame extends Phaser.Scene {
             badGuy.body.velocity.y = Math.random()*5;
                 
                 await new Promise((r) =>
-                    setTimeout(
+                    badGuy.routine = setTimeout(
                     () =>
                     new (function () {
                         // Be random or seek
@@ -760,6 +770,9 @@ class InGame extends Phaser.Scene {
                     enemyrun(enemy);
                 else 
                     enemyfollow(enemy);
+
+                enemy.on('destroy', function() {clearTimeout(enemy.routine)} );
+
 
         }
   
@@ -959,21 +972,11 @@ class InGame extends Phaser.Scene {
 
             entity.setData('isHit', Boolean(1));
 
-                            
+                
+
             if(entity.getData("Player")) {
                 health-=10;
-                
-                
-                
-                //shield powerup
-                if ("powerup-shield" in currentPowerups){
-                    health+=3
-                };
-                
-                
-                
-                
-                
+                            
                 
                 //txt.text = health;
 
@@ -1000,9 +1003,21 @@ class InGame extends Phaser.Scene {
                 }
             }
 
-            entity.setVelocityX((attacker.x-entity.x)*-0.05);
-            entity.setVelocityY(-10);
-            
+
+            if(entity.getData("Boss")) {
+                // Lower knockback for bosses
+                console.log('hit boss');
+                setValue(healthBar,healthBar.value - 5);
+                entity.setVelocityX((attacker.x-entity.x)*-0.005);
+                entity.setVelocityY(-1);
+
+
+            } else {
+
+                entity.setVelocityX((attacker.x-entity.x)*-0.05);
+                entity.setVelocityY(-10);
+
+            }
             
             entity.tint = 0xff0000;
             
@@ -1604,7 +1619,7 @@ class InGame extends Phaser.Scene {
             var bossHealth = this.add.text(270, 530, 'BOSS HEALTH', { fontSize: '15px', fill: '#FFFFFF' , fontFamily: 'Press-Start-2P' });
             bossHealth.setScrollFactor(0);
 
-            let healthBar=makeBar(140,100,0xe74c3c);
+            healthBar=makeBar(140,100,0xe74c3c);
             setValue(healthBar,100);
 
             var textView = this.add.text(200, 100, '', { fontSize: '32px', fill: '#FFFFFF' , fontFamily: 'Press-Start-2P' });
@@ -1634,12 +1649,188 @@ class InGame extends Phaser.Scene {
                 changeText("", 5000);
             }
 
+            // Manual for right now, will implement as a map feature if needed-
+            createEnemySpawner(1930,1050);
+
+            createBoss('pumpkin-dude',10,1970,900);
+            createBoss('scientist',1.4,8000,900);
+            createBoss('crab',10,6000,2000);
+            createBoss('skeleton',10,2100,1000);
+
+
+
+
+            // Future-- Make particles work for boss teleports and enemy deaths, player sword swing, etc!
+            var particles = ref.add.particles('pumpkin-dude');
+
+            particles.gravity = 200;
+            particles.x = player.x;
+            particles.y = player.y + 800;
+
+            var emitter = particles.createEmitter({});
+
+            console.log(emitter);
+            emitter.start();
+            emitter.explode();
+            emitter.gravity = 200;
 
             // Set listeners for boss health at certain amounts--
 
 
 
 
+        }
+
+
+
+        function createBoss(name,scale1,x,y) {
+            var enemySprite = name;
+            var scale = scale1;
+            var enemy = ref.matter.add.sprite(0,0,enemySprite).setScale(scale,scale);
+            var { width: ew, height: eh } = enemy;
+            const mainBody = Bodies.rectangle(0,0, ew * (scale * (0.66)), eh*(scale * 0.5), {
+              chamfer: { radius: 10 }
+            });
+            var detectionBody = Bodies.rectangle(0,0, ew * (scale * (6.66)), eh*(scale * 2.5), {
+                isSensor: true
+              });
+            var cB = Body.create({
+              parts: [
+                mainBody
+              ],
+              frictionStatic: 0,
+              frictionAir: 0,
+              friction: 0,
+              // The offset here allows us to control where the sprite is placed relative to the
+              // matter body's x and y - here we want the sprite centered over the matter body.
+              // Overwritten by future setOrigin..
+              render: { sprite: { xOffset: 0.5, yOffset: 0.5 } }
+            });
+            enemy.setExistingBody(cB).setFixedRotation();
+            enemy.x = x;
+            enemy.y = y;
+
+
+            
+            ref.matterCollision.addOnCollideActive({
+                objectA: enemy,
+                objectB: player.left,
+                callback: ref.checkHitLeft,
+                context: ref
+            });
+
+            ref.matterCollision.addOnCollideActive({
+                objectA: enemy,
+                objectB: player.right,
+                callback: ref.checkHitRight,
+                context: ref
+            });
+
+            ref.matterCollision.addOnCollideActive({
+                objectA: player.mainBody,
+                objectB: enemy,
+                callback: ref.hitEntity,
+                context: ref
+            });
+
+
+
+            enemy.setOrigin(0.5,0.6);
+            enemy.setSize(16,16);
+            enemy.body.centerOffset.y = 15;
+            //enemy.body.setPushable(false);
+            enemy.setData('isHit', Boolean(0));      
+            enemy.setData('health', 60);            
+            enemy.setData('Boss', Boolean(1));
+
+
+            enemy.anims.play(name);
+            // The type of Enemy AI is decided here-
+            // EnemyRun is just a mindless back and forth script.
+            // EnemyFollow will follow player until a cooldown, which will reset if they hit.
+            //enemyrun(enemy);
+            //enemyfollow(enemy);
+            enemyrun(enemy);
+
+            
+
+            return enemy;
+        }
+
+
+        function createEnemySpawner(x,y) {
+            // Spawn an enemy, respawn if they die--
+            var enemy = createEnemy(x,y);
+            enemy.on('destroy', function() { createEnemySpawner(x,y)  })
+
+        }
+
+        function createEnemy(x,y) {
+            var enemySprite = 'pumpkin-dude';
+            var scale = 3;
+            var enemy = ref.matter.add.sprite(0,0,enemySprite).setScale(scale,scale);
+            var { width: ew, height: eh } = enemy;
+            const mainBody = Bodies.rectangle(0,0, ew * (scale * (0.66)), eh*(scale * 0.5), {
+              chamfer: { radius: 10 }
+            });
+            var detectionBody = Bodies.rectangle(0,0, ew * (scale * (6.66)), eh*(scale * 2.5), {
+                isSensor: true
+              });
+            var cB = Body.create({
+              parts: [
+                mainBody
+              ],
+              frictionStatic: 0,
+              frictionAir: 0,
+              friction: 0,
+              // The offset here allows us to control where the sprite is placed relative to the
+              // matter body's x and y - here we want the sprite centered over the matter body.
+              // Overwritten by future setOrigin..
+              render: { sprite: { xOffset: 0.5, yOffset: 0.5 } }
+            });
+            enemy.setExistingBody(cB).setFixedRotation();
+            enemy.x = x;
+            enemy.y = y;
+
+            
+            ref.matterCollision.addOnCollideActive({
+                objectA: enemy,
+                objectB: player.left,
+                callback: ref.checkHitLeft,
+                context: ref
+            });
+
+            ref.matterCollision.addOnCollideActive({
+                objectA: enemy,
+                objectB: player.right,
+                callback: ref.checkHitRight,
+                context: ref
+            });
+
+            ref.matterCollision.addOnCollideActive({
+                objectA: player.mainBody,
+                objectB: enemy,
+                callback: ref.hitEntity,
+                context: ref
+            });
+
+
+            enemy.setOrigin(0.5,0.6);
+            enemy.setSize(16,16);
+            enemy.body.centerOffset.y = 15;
+            //enemy.body.setPushable(false);
+            enemy.setData('isHit', Boolean(0));      
+            enemy.setData('health', 30);            
+
+            enemy.anims.play('pumpkin-dude');
+            // The type of Enemy AI is decided here-
+            // EnemyRun is just a mindless back and forth script.
+            // EnemyFollow will follow player until a cooldown, which will reset if they hit.
+            enemyrun(enemy);
+
+            
+
+            return enemy;
         }
 
         // Boss script
@@ -1718,11 +1909,13 @@ class InGame extends Phaser.Scene {
             bar.x = x;
             bar.y = y;
     
+            bar.value = 100;
             //return the bar
             return bar;
         }
         function setValue(bar,percentage) {
             //scale the bar
+            bar.value = percentage;
             bar.scaleX = percentage/100;
         }
 
@@ -2019,7 +2212,7 @@ class InGame extends Phaser.Scene {
 
 
     update() {
-console.log(players);
+//console.log(players);
         // PARALLAX EFFECT
         if((player.anims.currentAnim.key == "walk" || player.anims.currentAnim.key == "jump") && savedCameraPos != this.cameras.main.scrollX) {
             if(player.flipX) {
