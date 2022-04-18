@@ -273,8 +273,8 @@
                  "type":"",
                  "visible":true,
                  "width":0,
-                 "x":2053.33333333333,
-                 "y":274.666666666667
+                 "x":2173.83333333333,
+                 "y":316.166666666667
                 }, 
                 {
                  "height":0,
@@ -555,34 +555,6 @@
                  "width":0,
                  "x":1674.66666666667,
                  "y":670
-                }, 
-                {
-                 "height":0,
-                 "id":38,
-                 "name":"",
-                 "point":true,
-                 "properties":[
-                        {
-                         "name":"enemytype",
-                         "type":"string",
-                         "value":"skeleton"
-                        }, 
-                        {
-                         "name":"scale",
-                         "type":"string",
-                         "value":"3"
-                        }, 
-                        {
-                         "name":"zAI",
-                         "type":"int",
-                         "value":0
-                        }],
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":0,
-                 "x":1396,
-                 "y":1324
                 }, 
                 {
                  "height":0,

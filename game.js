@@ -47,7 +47,7 @@ var poweruplevel = 0;
 
 
 
-var currentMapNum = 2;
+var currentMapNum = 0;
 
 
 
@@ -1657,7 +1657,7 @@ class InGame extends Phaser.Scene {
             createBoss('pumpkin-dude',10,1970,900);
             createBoss('scientist',1.4,8000,900);
             createBoss('crab',10,7000,2500);
-            createBoss('skeleton',10,2500,2000);
+            createBoss('skeleton',10,2500,2100);
 
 
 
