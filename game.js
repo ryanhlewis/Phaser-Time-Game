@@ -31,9 +31,10 @@ var currentPowerups = [];
 var block;
 var blockT = false;
 var tempMap;
+var backgroundMusic;
 
-        // Checkpoint, for any death function usage.
-        var lastCheckpoint;
+// Checkpoint, for any death function usage.
+var lastCheckpoint;
 
 
 
@@ -634,8 +635,10 @@ class InGame extends Phaser.Scene {
         
         //Music
         var s = 'music' + currentMapNum;
-        var backgroundMusic = this.add.audio(s);
-        backgroundMusic.loop = true;
+        if (backgroundMusic !== undefined){
+            backgroundMusic.destroy();
+        }
+        backgroundMusic = this.sound.add(s, { loop: true });
         backgroundMusic.play();
 
 
