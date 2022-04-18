@@ -89,7 +89,7 @@
  "nextobjectid":9,
  "orientation":"orthogonal",
  "renderorder":"right-down",
- "tiledversion":"1.8.1",
+ "tiledversion":"1.8.2",
  "tileheight":16,
  "tilesets":[
         {
@@ -99,7 +99,7 @@
          "imageheight":224,
          "imagewidth":256,
          "margin":0,
-         "name":"SANDLAND",
+         "name":"level3",
          "spacing":0,
          "tilecount":224,
          "tileheight":16,
