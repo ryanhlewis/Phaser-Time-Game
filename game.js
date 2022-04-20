@@ -650,6 +650,7 @@ class InGame extends Phaser.Scene {
         }
         backgroundMusic = this.sound.add(s, { loop: true });
         backgroundMusic.play();
+        
 
 
         // Different Types of Enemy AIs
@@ -808,7 +809,7 @@ class InGame extends Phaser.Scene {
             heart.setScrollFactor(0);
         };
 
-        for (let i = 0; i < healthLevel + 3; i++) {
+        for (let i = 0; i < healthLevel + 5; i++) {
             createHeart();
         }
         
@@ -976,6 +977,8 @@ class InGame extends Phaser.Scene {
 
             if(entity.getData("Player")) {
                 health-=10;
+                
+                console.log(health)
                             
                 
                 //txt.text = health;
@@ -983,15 +986,25 @@ class InGame extends Phaser.Scene {
                 // First, choose the right heart to act on-
                 var divider = 100 / hearts.length;
                 // Need to work this out to work with "bigger health hits".
-                var chosenIndex = Math.floor(hearts.length * ((health + 10) / 100.0));
+                var chosenIndex = Math.ceil(hearts.length * (health / 100.0)) - 1;
+                
+                console.log(chosenIndex)
+                
+                var healthIndex = hearts.length * (health / 100.0) - 1
+                console.log(healthIndex)
+                
+                var chosenIndexPlusOne = chosenIndex + 1
+                
                 // Math might be a little off- fix later
-                if (chosenIndex >= hearts.length) chosenIndex = hearts.length - 1;
+                if (chosenIndexPlusOne >= hearts.length -1) {
+                    chosenIndexPlusOne = hearts.length - 1
+                };
 
-                if (health < chosenIndex * divider + divider / 2) {
+                if (health <= (chosenIndex+1)*divider-divider/2) {
                     hearts[chosenIndex].setTexture('hearts-half');
                 }
-                if (health <= chosenIndex * divider) {
-                    hearts[chosenIndex].setTexture('hearts-empty');
+                if (healthIndex == chosenIndex && chosenIndex <= hearts.length) {
+                    hearts[chosenIndexPlusOne].setTexture('hearts-empty');
                 }
 
 
@@ -2299,6 +2312,7 @@ class InGame extends Phaser.Scene {
             timeText.x = player.x - 100;
             timeText.y = player.y + 50;
             timeText.setVisible(true);
+            player.tint = 0xff0000
             player.setVelocityX(0);
             player.setVelocityY(0);
             player.anims.play('stand');
