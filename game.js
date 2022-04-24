@@ -33,6 +33,7 @@ var block;
 var blockT = false;
 var tempMap;
 var backgroundMusic;
+var lastMapNum = 0;
 
 // Checkpoint, for any death function usage.
 var lastCheckpoint;
@@ -645,12 +646,17 @@ class InGame extends Phaser.Scene {
         
         //Music
         var s = 'music' + currentMapNum;
-        if (backgroundMusic !== undefined){
+        if (currentMapNum !== lastMapNum){
             backgroundMusic.destroy();
+            backgroundMusic = this.sound.add(s, { loop: true });
+            backgroundMusic.play();
         }
-        backgroundMusic = this.sound.add(s, { loop: true });
-        backgroundMusic.play();
-
+        else if (backgroundMusic === undefined){
+            backgroundMusic = this.sound.add(s, { loop: true });
+            backgroundMusic.play();
+        }
+        
+        lastMapNum = currentMapNum;
 
         // Different Types of Enemy AIs
 
