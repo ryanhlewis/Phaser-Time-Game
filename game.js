@@ -438,8 +438,14 @@ class InGame extends Phaser.Scene {
 
         function onGround(collision) {
             // Detecting onGround for jumping
-            if(!collision.bodyB.isSensor) {
+            if(!collision.bodyB.isSensor && !collision.gameObjectB.isEnemy) {
                 player.onGround = true;
+            }
+            else if (collision.gameObjectB.isEnemy && collision.gameObjectB.enemySprite == 'pumpkin-dude'){
+                var col = {};
+                col.gameObjectA = collision.gameObjectB;
+                col.gameObjectB = collision.gameObjectA;
+                ref.hitEntity(col);
             }
             // Detecting sensor ladder.
             else if (collision.bodyB.isLadder) {
@@ -759,6 +765,7 @@ class InGame extends Phaser.Scene {
 
                 this.enemies.push(enemy);
                 enemy.enemySprite = enemySprite;
+                enemy.isEnemy = true;
 
                 //console.log(enemy.x + " " + enemy.y);
                 //console.log(player.x + " " + player.y);
@@ -1104,7 +1111,7 @@ class InGame extends Phaser.Scene {
             doorPrompt.body.isStatic = true;
             doorPrompt.body.isSensor = true;
 
-            this.matterCollision.addOnCollideActive({
+            this.matterCollision.addOnCollideStart({
                 objectA: player.mainBody,
                 objectB: doorPrompt,
                 callback: doorPromptFunction,
@@ -1118,10 +1125,11 @@ class InGame extends Phaser.Scene {
                 context: this
             });
 
+        
+            var textB;
             function doorPromptFunction() {
                 blockT = true;
-                var textB = '';
-                if(textB == ''){
+                if(textB === undefined){
                     if(currentMapNum == 0){
                         textB = this.add.text(3150, 800, 'You need\na key!', { fontSize: '32px', fill: '#FFFFFF',fontFamily: 'Press-Start-2P' });
                     }
@@ -1132,6 +1140,7 @@ class InGame extends Phaser.Scene {
                 }
                 if(currentPowerups.includes(power)) {
                     doorPrompt.destroy();
+                    textB.destroy();
                     var xyz = [];
                     for (let i = 0; i < currentPowerups.length; i++) {
                         if (currentPowerups[i] != power){
