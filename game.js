@@ -38,6 +38,8 @@ var lastMapNum = 0;
 // Checkpoint, for any death function usage.
 var lastCheckpoint;
 
+var roomCode = "";
+
 
 
 var powerup = 100;
@@ -178,6 +180,12 @@ class MainMenu extends Phaser.Scene{
         this.load.on("complete", ()=>{
             console.log("done")
         })*/
+
+        this.load.scenePlugin({
+            key: 'rexuiplugin',
+            url: 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexuiplugin.min.js',
+            sceneKey: 'rexUI'
+        });
     }
 
     create(){
@@ -208,7 +216,12 @@ class MainMenu extends Phaser.Scene{
         
         playButton.on("pointerdown", ()=>{
             rref.scene.start("InGame");
+            roomCode = codeGenerator();
         })
+
+
+
+        var socket = io();
 
 
         let joinButton = rref.add.image(rref.sys.game.config.width/2, rref.sys.game.config.height/2+150, "join_button").setScale(0.25);
@@ -227,15 +240,66 @@ class MainMenu extends Phaser.Scene{
             hoverSprite.setVisible(0);
          }) 
         
+         const text = rref.add.text(350, 530, 'Enter Room Code Here!', { fixedWidth: 150, fixedHeight: 36 })
+         text.setScrollFactor(0);
+         text.setOrigin(0.5, 0.5);
+         text.setDepth(-100);
+     
+         text.setInteractive().on('pointerdown', () => {
+             rref.rexUI.edit(text);
+             text.text = "";
+         })
+
+         var hey = text
+
+
         joinButton.on("pointerdown", ()=>{
 
                 //right popup
 
             // Future- get input and type in multiplayer room key
             // That's very low priority. Separate rooms might as well be a bug fix. They're unneccessary right now.
+            
+            if(text.text == "Enter Room Code Here!") {
+                text.setDepth(100);
+            } else {
+                
+                // Try joining room ---
+                text.setDepth(-100);
+
+                // Ensure room exists
+                socket.emit('isKeyValid', text.text)
+            }
+
+
+            //rref.scene.start("InGame");
+        })
+
+
+        // Must get the unique ID after they connect to server
+        socket.on('joined', function() {
+
+        });
+
+        socket.on('keyIsValid', function(msg) {
+
+            console.log("Key is valid.");
 
             rref.scene.start("InGame");
-        })
+            roomCode = msg;
+
+        });
+
+        socket.on('keyNotValid', function() {
+            
+            console.log("Key is not valid.");
+            hey.setDepth(100);
+
+            var text = rref.add.text(550, 530, 'Key not valid!!', { fixedWidth: 150, fixedHeight: 36 })
+            text.setScrollFactor(0);
+            text.setOrigin(0.5, 0.5);
+            text.setDepth(100);
+        });
 
 	}
 
@@ -246,7 +310,14 @@ class MainMenu extends Phaser.Scene{
 
 
 
-
+function codeGenerator() {
+    let code = "";
+    let chars = "ABCDEFGHJKLMNPQRSTUVWXYZ0123456789";
+    for (let i = 0; i < 5; i++) {
+      code += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return code;
+  }
 
 
 // FUTURE- A class to handle Main Menu, and Level Selection.
@@ -279,7 +350,6 @@ class InGame extends Phaser.Scene {
         //Fonts
         this.load.script('webfont', 'https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js');
 
-        
     }
     
 
@@ -288,8 +358,6 @@ class InGame extends Phaser.Scene {
         
     
 
-
-        
         // Reference, used for nested functions
         var ref = this;
 
@@ -1540,6 +1608,11 @@ class InGame extends Phaser.Scene {
         // Future- special map modifiers
         if(currentMap == mapArray[0]) {
             this.add.text(345, 875, 'Use the right and\nleft arrow keys\nto move.\n\nUse the up arrow\nkey to jump.', { fontSize: '32px', fill: '#FFFFFF' , fontFamily: 'Press-Start-2P' });
+            
+            if(roomCode != "") {
+                this.add.text(745, 1175, 'Your room code is ' + roomCode + "\n Invite your friends!", { fontSize: '32px', fill: '#FFFFFF' , fontFamily: 'Press-Start-2P' });
+            }
+            
             this.add.text(1135, 975, 'To Interact', { fontSize: '32px', fill: '#FFFFFF', fontFamily: 'Press-Start-2P'});
             this.add.text(3850, 2400, 'Press Space to attack.', { fontSize: '32px', fill: '#FFFFFF' , fontFamily: 'Press-Start-2P'});
             this.add.text(3550, 1990, 'Interact with the environment\n to solve puzzles.', { fontSize: '32px', fill: '#FFFFFF',fontFamily: 'Press-Start-2P' });
@@ -2163,7 +2236,13 @@ class InGame extends Phaser.Scene {
         // Must get the unique ID after they connect to server
         socket.on('joined', function() {
             players[socket.id] = new Player(player);
+
+            if(roomCode != "") {
+                socket.emit("makeRoom",roomCode)
+            }
+
             socket.emit('playerjoin', socket.id);
+
         });
 
         socket.on('playerjoinedReply',function(msg) {
@@ -2266,8 +2345,10 @@ class InGame extends Phaser.Scene {
         });
 
         socket.on('disconnected', function (playerId) {
-            players[playerId].player.destroy();
-            delete players[playerId];
+            if(players[playerId] !== undefined) {
+                players[playerId].player.destroy();
+                delete players[playerId];
+            }
         });
     }
 
@@ -2378,6 +2459,10 @@ var config = {
             showStaticBody: false
         }
     }},
+    parent: 'phaser-container',
+	dom: {
+        createContainer: true
+    },
     plugins: {
         scene: [
           {

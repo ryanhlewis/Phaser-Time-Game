@@ -4,9 +4,10 @@
   "description": "a game about breaking time",
   "dependencies": {
     "cors": "^2.8.5",
-    "express": "^4.17.2",
+    "express": "^4.17.3",
     "install": "^0.13.0",
     "npm": "^8.4.0",
+    "phaser3-rex-plugins": "^1.1.68",
     "socket.io": "^4.4.1"
   },
   "scripts": {

@@ -4,6 +4,8 @@ const http = require('http').Server(app);
 const io = require('socket.io')(http);
 const port = process.env.PORT || 3000;
 
+const gameRooms = {};
+
 /* Socket.IO docs
 
 socket.emit('message', "this is a test"); //sending to sender-client only
@@ -45,65 +47,76 @@ io.on('connection', (socket) => {
   //Reply to their connection by fetching their socket.id
   socket.emit('joined');
 
-  socket.on('chat message', msg => {
-    console.log("received chat");
-    io.emit('chat message', msg);
+  var roomCode = "";
+
+  socket.on('makeRoom', msg => {
+    if(gameRooms[msg] === undefined) {
+      console.log("Made room " + msg);
+      gameRooms[msg] = msg
+    }
+    socket.join(msg);
+    roomCode = msg;
+  });
+
+  socket.on('delRoom', msg => {
+    console.log("Deleted room" + msg);
+    delete gameRooms.msg
   });
 
   socket.on('movement', msg => {
-    socket.broadcast.emit('movement', msg);
+    socket.to(roomCode).emit('movement', msg);
   });
 
   socket.on('teleport', msg => {
-    socket.broadcast.emit('teleport', msg);
+    socket.to(roomCode).emit('teleport', msg);
   });
 
   socket.on('elevator', msg => {
     console.log("elevator sent");
-    socket.broadcast.emit('elevator', msg);
+    socket.to(roomCode).emit('elevator', msg);
   });
 
   socket.on('attack', msg => {
     console.log("attack sent");
-    socket.broadcast.emit('attack', msg);
+    socket.to(roomCode).emit('attack', msg);
   });
 
   socket.on('newmap', msg => {
 
     // Congrats. You sent the map. Enjoy enemies targetting you. :)
     console.log("new map sent");
-    io.emit('enemytarget',msg[0]);
-    socket.broadcast.emit('newmap', msg[1]);
+    socket.to(roomCode).emit('enemytarget',msg[0]);
+    socket.to(roomCode).emit('newmap', msg[1]);
   });
   
   socket.on('playerjoin', msg => {
     console.log("player has joined. get replies");
     // Broadcast new player to all current players
-    socket.broadcast.emit('playerjoinedReply',msg);
+    socket.to(roomCode).emit('playerjoinedReply',msg);
   });
 
   socket.on('sendPlayer', msg => {
-    io.to(msg[0]).emit('playerjoined',[msg[1],msg[2],msg[3]]);
-  });
-
-  socket.on('bomb', async msg => {
-    // Authority- determine bomb status, stars status for this round.
-    // The first socket who calls this gets their numbers in.
-    if(!roundCall) {
-      roundCall = Boolean(1);
-      io.emit('bomb',msg);
-      
-      console.log("Called round!");
-      
-      await new Promise(r => setTimeout(() => roundCall = Boolean(0), 2000));
-    }
-
+    socket.to(msg[0]).emit('playerjoined',[msg[1],msg[2],msg[3]]);
   });
 
   socket.on('disconnect', function () {
     console.log('user disconnected');
-    io.emit('disconnected', socket.id);
+    socket.to(roomCode).emit('disconnected', socket.id);
   });
+
+
+  // Room Code tutorial from https://github.com/hannahrobot/amongus-tutorial/blob/main/server/socket/index.js
+  socket.on("isKeyValid", function (input) {
+
+    console.log('checking ' + input);
+
+    Object.keys(gameRooms).includes(input)
+      ? socket.emit("keyIsValid", input)
+      : socket.emit("keyNotValid");
+  });
+
+
+
 
 });
 
