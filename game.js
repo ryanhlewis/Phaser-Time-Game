@@ -62,6 +62,7 @@ class LoadAssets extends Phaser.Scene {
     preload() {
         // Player
         this.load.spritesheet('player', 'assets/spritesheets/player.png', { frameWidth: 48, frameHeight: 48 })
+        this.load.spritesheet('player2', 'assets/spritesheets/player2.png', { frameWidth: 23, frameHeight: 34})
         
         // Hearts
         this.load.image('hearts-full', 'assets/icons/hearts-full.png');
@@ -2148,7 +2149,7 @@ class InGame extends Phaser.Scene {
         socket.on('playerjoined',function(msg) {
             // Create new player
             console.log("player joined:" + msg[0]);
-            var player = ref.matter.add.sprite(400, 900, 'player').setScale(3,3);
+            p
             makePlayer(player);
             var playerObj = new Player(player);
 
