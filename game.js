@@ -1220,7 +1220,9 @@ class InGame extends Phaser.Scene {
                 }
                 if(currentPowerups.includes(power)) {
                     doorPrompt.destroy();
-                    textB.destroy();
+                    if (textB !== undefined){
+                        textB.destroy();
+                    }
                     var xyz = [];
                     for (let i = 0; i < currentPowerups.length; i++) {
                         if (currentPowerups[i] != power){
