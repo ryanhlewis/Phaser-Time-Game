@@ -139,6 +139,11 @@ class LoadAssets extends Phaser.Scene {
         this.load.image("hover", "assets/icons/10.png");
         
         
+        this.load.image('resume_button', 'assets/resume.png');
+        this.load.image('restart_button', 'assets/restart.png');
+        this.load.image('exit_button', 'assets/exit.png');
+        this.load.image('pause_button', 'assets/pause.png');
+        
         //Music
         this.load.audio('music0', 'assets/music/out-of-time-15474.mp3');
         this.load.audio('music1', 'assets/music/knights-of-camelot-8038.mp3');
@@ -305,7 +310,127 @@ class MainMenu extends Phaser.Scene{
 
 	update(){	
 	}
-}
+};
+
+
+
+
+
+
+
+
+
+
+class PauseMenu extends Phaser.Scene{
+	constructor(){
+		super("PauseMenu")
+	};
+
+	preload(){
+        this.load.scenePlugin({
+            key: 'rexuiplugin',
+            url: 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexuiplugin.min.js',
+            sceneKey: 'rexUI'
+        });
+    };
+
+    create(){
+        
+        var rref = this;
+        
+        this.background = rref.add.image(0, 0, "level1-back").setOrigin(0).setScale(10);
+        
+        this.background.displayWidth = this.sys.canvas.width;
+        this.background.displayHeight = this.sys.canvas.height
+        
+        let resumeButton = rref.add.image(rref.sys.game.config.width/2, rref.sys.game.config.height/2-50, "resume_button").setScale(0.5);
+        
+        let restartButton = rref.add.image(rref.sys.game.config.width/2, rref.sys.game.config.height/2+50, "restart_button").setScale(0.5);
+        
+        let exitButton = rref.add.image(rref.sys.game.config.width/2, rref.sys.game.config.height/2+150, "exit_button").setScale(0.4);
+        
+        var hoverSprite = rref.add.image(100, 100, "hover").setScale(1.5);
+        hoverSprite.setVisible(0);
+    
+        
+        resumeButton.setInteractive();
+        
+        resumeButton.on("pointerover", ()=>{
+            hoverSprite.setVisible(1);
+            hoverSprite.x = resumeButton.x - 150;
+            hoverSprite.y = resumeButton.y;
+        })
+        
+        resumeButton.on("pointerout", ()=>{
+            hoverSprite.setVisible(0);
+         }) 
+        
+        resumeButton.on("pointerdown", ()=>{
+            rref.scene.stop();
+            rref.scene.resume("InGame");
+            
+        })
+        
+        
+        
+        restartButton.setInteractive();
+        
+        restartButton.on("pointerover", ()=>{
+            hoverSprite.setVisible(1);
+            hoverSprite.x = restartButton.x - 150;
+            hoverSprite.y = restartButton.y;
+        })
+        
+        restartButton.on("pointerout", ()=>{
+            hoverSprite.setVisible(0);
+         }) 
+        
+        restartButton.on("pointerdown", ()=>{
+            rref.scene.start("InGame");
+        })
+
+        
+        
+        exitButton.setInteractive();
+        
+        exitButton.on("pointerover", ()=>{
+            hoverSprite.setVisible(1);
+            hoverSprite.x = exitButton.x - 150;
+            hoverSprite.y = exitButton.y;
+        })
+        
+        exitButton.on("pointerout", ()=>{
+            hoverSprite.setVisible(0);
+         }) 
+        
+        exitButton.on("pointerdown", ()=>{
+            rref.scene.start("MainMenu");
+        })
+
+
+	}
+
+	update(){	
+	}
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -354,9 +479,7 @@ class InGame extends Phaser.Scene {
     
 
     create() {
-
         
-    
 
         // Reference, used for nested functions
         var ref = this;
@@ -504,6 +627,8 @@ class InGame extends Phaser.Scene {
         console.log(player.mainBody);
         player.onGround = false;
 
+        
+        
         function onGround(collision) {
             // Detecting onGround for jumping
             if(!collision.bodyB.isSensor && !collision.gameObjectB.isEnemy) {
@@ -968,6 +1093,29 @@ class InGame extends Phaser.Scene {
             context: this
         });
         
+        
+        
+        
+        
+        
+        
+        let pauseButton = this.add.image(this.sys.game.config.width/2+250, 35, "pause_button").setScale(0.25);
+        
+        pauseButton.setScrollFactor(0);
+
+        
+        pauseButton.setInteractive();
+        
+        pauseButton.on("pointerover", ()=>{ 
+        })
+        
+        pauseButton.on("pointerout", ()=>{
+         }) 
+        
+        pauseButton.on("pointerdown", ()=>{
+            this.scene.pause("InGame");
+            this.scene.start("PauseMenu");
+        })
         
         
         
@@ -2482,7 +2630,8 @@ var config = {
     scene: [
         LoadAssets,
         MainMenu,
-        InGame        
+        InGame,
+        PauseMenu,
     ],
 };
 
