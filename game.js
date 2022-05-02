@@ -1865,6 +1865,9 @@ class InGame extends Phaser.Scene {
 
 
         } else if(currentMapNum == 2) {
+            
+            this.cameras.main.setBackgroundColor('0x1e3f66');
+
 
             tempMap = map.createLayer("TempSolid", tileset, 0, 200);
             tempMap.setScale(3,3);
@@ -1941,7 +1944,15 @@ class InGame extends Phaser.Scene {
         } else if(currentMapNum == 3) {
 
 
+<<<<<<< Updated upstream
             var portal = this.matter.add.sprite(1847,1050, 'door').setScale(7,7);
+=======
+            this.cameras.main.setBackgroundColor('0xe7c27d');
+
+        
+            
+            var portal = this.matter.add.sprite(1450,1050, 'door').setScale(7,7);
+>>>>>>> Stashed changes
             portal.body.isSensor = true;
             portal.body.isStatic = true;
 
