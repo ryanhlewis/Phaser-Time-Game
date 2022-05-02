@@ -129,8 +129,8 @@ class LoadAssets extends Phaser.Scene {
         //Music
         this.load.audio('music0', 'assets/music/out-of-time-15474.mp3');
         this.load.audio('music1', 'assets/music/knights-of-camelot-8038.mp3');
-        this.load.audio('music2', 'assets/music/chinese-wind-15264.mp3');
-        this.load.audio('music3', 'assets/music/action-drums-sport-106841.mp3');
+        this.load.audio('music3', 'assets/music/chinese-wind-15264.mp3');
+        this.load.audio('music2', 'assets/music/action-drums-sport-106841.mp3');
     
         
         this.load.image('bosslevel-back', 'assets/maps/transparent.png');
@@ -356,7 +356,7 @@ class InGame extends Phaser.Scene {
             new Map("level1",400,600,600, 3, 600,600),
             new Map("level2",400,600,725, 3, 440, 2300),
             new Map("bosslevel",400,600,725, 3, 400, 200),
-            new Map("level3",500,600,725, 3, 300, 1800)
+            new Map("level3",500,600,725, 3, 325, 1800)
         ]
         var currentMap = mapArray[currentMapNum];
 
@@ -1123,14 +1123,17 @@ class InGame extends Phaser.Scene {
             
             var xB = 0;
             var yB = 0;
+            var s = 1;
             if(currentMapNum == 0){
                 xB = 3050;
                 yB = 950;
+                s = 2;
             } else if(currentMapNum == 1){
                 xB = 3125;
                 yB = 2300;
+                s = 4;
             }
-            var doorPrompt = this.matter.add.image(xB, yB, 'block').setScale(2,2);
+            var doorPrompt = this.matter.add.image(xB, yB, 'block').setScale(s,s);
             doorPrompt.body.isStatic = true;
             doorPrompt.body.isSensor = true;
 
@@ -1156,6 +1159,9 @@ class InGame extends Phaser.Scene {
                     if(currentMapNum == 0){
                         textB = this.add.text(3150, 800, 'You need\na key!', { fontSize: '32px', fill: '#FFFFFF',fontFamily: 'Press-Start-2P' });
                     }
+                    else if(currentMapNum == 1){
+                        textB = this.add.text(3015, 2400, 'You need a coin\nto make a wish!', { fontSize: '32px', fill: '#FFFFFF',fontFamily: 'Press-Start-2P' });
+                    }
                 }
                 var power = 'powerup-keycard';
                 if(currentMapNum == 1){
@@ -1166,14 +1172,6 @@ class InGame extends Phaser.Scene {
                     if (textB !== undefined){
                         textB.destroy();
                     }
-                    var xyz = [];
-                    for (let i = 0; i < currentPowerups.length; i++) {
-                        if (currentPowerups[i] != power){
-                            xyz.push(currentPowerups[i]);
-                        }
-                    }
-                    currentPowerups = xyz;
-                    console.log(currentPowerups);
                     blockT = false;
                 };
             }
@@ -1550,6 +1548,7 @@ class InGame extends Phaser.Scene {
             this.add.text(3850, 2400, 'Press Space to attack.', { fontSize: '32px', fill: '#FFFFFF' , fontFamily: 'Press-Start-2P'});
             this.add.text(3550, 1990, 'Interact with the environment\n to solve puzzles.', { fontSize: '32px', fill: '#FFFFFF',fontFamily: 'Press-Start-2P' });
             this.add.text(495, 2150, 'You found the\ntime machine!', { fontSize: '32px', fill: '#FFFFFF',fontFamily: 'Press-Start-2P' });
+            this.add.text(150, 2150, 'Jump into the portal!', { fontSize: '32px', fill: '#FFFFFF',fontFamily: 'Press-Start-2P' });
             var portal = this.matter.add.sprite(290,1950, 'portal').setScale(2,2);
 
             var mainBody = Bodies.rectangle(290,1950, 50, 50, {
@@ -1722,7 +1721,7 @@ class InGame extends Phaser.Scene {
         } else if(currentMapNum == 3) {
 
 
-            var portal = this.matter.add.sprite(1847,1050, 'door').setScale(7,7);
+            var portal = this.matter.add.sprite(1450,1050, 'door').setScale(7,7);
             portal.body.isSensor = true;
             portal.body.isStatic = true;
 
@@ -1775,6 +1774,7 @@ class InGame extends Phaser.Scene {
             enemy.y = y;
 
             enemy.enemySprite = enemySprite;
+            enemy.isEnemy = true;
 
             
             ref.matterCollision.addOnCollideActive({
