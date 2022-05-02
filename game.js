@@ -1944,13 +1944,9 @@ class InGame extends Phaser.Scene {
         } else if(currentMapNum == 3) {
 
 
-<<<<<<< Updated upstream
-            var portal = this.matter.add.sprite(1847,1050, 'door').setScale(7,7);
-=======
+//            var portal = this.matter.add.sprite(1847,1050, 'door').setScale(7,7);
             this.cameras.main.setBackgroundColor('0xe7c27d');
 
-        
-            
             var portal = this.matter.add.sprite(1450,1050, 'door').setScale(7,7);
 >>>>>>> Stashed changes
             portal.body.isSensor = true;
