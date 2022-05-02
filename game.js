@@ -116,7 +116,7 @@ class LoadAssets extends Phaser.Scene {
 		this.load.image('level2-middle', 'assets/maps/transparent.png');
 		this.load.image('level2-front', 'assets/maps/transparent.png');
         this.load.image('level2-background', 'assets/maps/Level2 Background.png')
-        this.load.image('level3-back', 'assets/maps/Level2 Background.png');
+        this.load.image('level3-back', 'assets/maps/transparent.png');
 		this.load.image('level3-middle', 'assets/maps/transparent.png');
 		this.load.image('level3-front', 'assets/maps/transparent.png');
         this.load.image('level3-background', 'assets/maps/transparent.png')
