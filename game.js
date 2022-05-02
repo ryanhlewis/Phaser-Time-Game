@@ -12,10 +12,8 @@ var enemyTarget;
 var player;
 var cursors;
 var socket;
-var vials;
 var scoreText;
 var timeText;
-var vialsT;
 var panel;
 var savedCameraPos;
 var enemy;
@@ -39,19 +37,9 @@ var lastMapNum = 0;
 var lastCheckpoint;
 
 var roomCode = "";
-
-
-
 var powerup = 100;
 var poweruplevel = 0;
-
-
-
-
-
-
 var currentMapNum = 0;
-
 
 
 
@@ -77,7 +65,6 @@ class LoadAssets extends Phaser.Scene {
         this.load.image('powerup-potion', 'assets/powerups/potion.png');
         this.load.image('powerup-shield', 'assets/powerups/shield.png');
 
-        //this.load.image('powerup-keycard', 'assets/powerups/newspaper.png');
         this.load.image('powerup-jar', 'assets/powerups/light-jar1.png');
         this.load.image('powerup-keycard', 'assets/powerups/key_01c.png');
         this.load.image('powerup-coin', 'assets/powerups/coin_01d.png');
@@ -142,8 +129,8 @@ class LoadAssets extends Phaser.Scene {
         //Music
         this.load.audio('music0', 'assets/music/out-of-time-15474.mp3');
         this.load.audio('music1', 'assets/music/knights-of-camelot-8038.mp3');
-        this.load.audio('music2', 'assets/music/chinese-wind-15264.mp3');
-        this.load.audio('music3', 'assets/music/action-drums-sport-106841.mp3');
+        this.load.audio('music3', 'assets/music/chinese-wind-15264.mp3');
+        this.load.audio('music2', 'assets/music/action-drums-sport-106841.mp3');
     
         
         this.load.image('bosslevel-back', 'assets/maps/transparent.png');
@@ -166,21 +153,6 @@ class MainMenu extends Phaser.Scene{
 	};
 
 	preload(){
-        /*let loadingBar = this.add.graphics({
-            fillStyle: {
-                color: 0xffffff // white
-            }
-        })
-        
-        this.load.on("progress", (percent)=>{
-            loadingBar.fillRect(0, this.game.renderer.height/2, this.game.renderer.width * percent);
-            console.log(percent)
-        })
-        
-        this.load.on("complete", ()=>{
-            console.log("done")
-        })*/
-
         this.load.scenePlugin({
             key: 'rexuiplugin',
             url: 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexuiplugin.min.js',
@@ -254,11 +226,6 @@ class MainMenu extends Phaser.Scene{
 
 
         joinButton.on("pointerdown", ()=>{
-
-                //right popup
-
-            // Future- get input and type in multiplayer room key
-            // That's very low priority. Separate rooms might as well be a bug fix. They're unneccessary right now.
             
             if(text.text == "Enter Room Code Here!") {
                 text.setDepth(100);
@@ -271,8 +238,6 @@ class MainMenu extends Phaser.Scene{
                 socket.emit('isKeyValid', text.text)
             }
 
-
-            //rref.scene.start("InGame");
         })
 
 
@@ -320,8 +285,6 @@ function codeGenerator() {
   }
 
 
-// FUTURE- A class to handle Main Menu, and Level Selection.
-
 // This scene handles all In-Game activities, from displayin
 // the current map, backgrounds, handling player movement,
 // puzzle interactions, enemy spawns, and more. It has been
@@ -355,12 +318,8 @@ class InGame extends Phaser.Scene {
 
     create() {
 
-        
-    
-
         // Reference, used for nested functions
         var ref = this;
-
 
 
         // Fonts
@@ -397,7 +356,7 @@ class InGame extends Phaser.Scene {
             new Map("level1",400,600,600, 3, 600,600),
             new Map("level2",400,600,725, 3, 440, 2300),
             new Map("bosslevel",400,600,725, 3, 400, 200),
-            new Map("level3",500,600,725, 3, 300, 1800)
+            new Map("level3",500,600,725, 3, 325, 1800)
         ]
         var currentMap = mapArray[currentMapNum];
 
@@ -431,9 +390,6 @@ class InGame extends Phaser.Scene {
 
         // MAP SECTION
         // Load the current map for the player.
-        //const strName = currentMap.name + '-background';
-        //console.log(strName);
-        //this.add.image(2400, 1250, strName).setScale(3,3);
         const map = this.make.tilemap({ key: currentMap.mapName});
         const tileset = map.addTilesetImage(currentMap.name,currentMap.tilesetName);
         const backMap = map.createLayer("Background", tileset, 0, 200);
@@ -444,11 +400,6 @@ class InGame extends Phaser.Scene {
         
 
         const { Body, Bodies } = Phaser.Physics.Matter.Matter; // Native Matter modules
-        
-        //vials = this.matter.add.staticGroup();
-        //var cabinet = vials.create(430, 1065, 'vials').setScale(3,3);
-        // For testing purposes, set the sprite alpha to 0-
-        //cabinet.alpha = 0;
 
         // MAP SCALES, PLAYER, CAMERA, AND REFERENCE
         // DO NOT CHANGE.
@@ -469,9 +420,6 @@ class InGame extends Phaser.Scene {
         player = this.matter.add.sprite(400, 900, 'player');
         console.log(player);
 
-//        player = this.matter.add.sprite(400, 900, 'player');
-        //player.body.offset.x = -20;
-        //player.y = 100;
         player.setScale(3,3);
         
         panel = this.add.image(0, 0, 'window');
@@ -560,9 +508,6 @@ class InGame extends Phaser.Scene {
           
 
         player.setDepth(5);
-        
-        // FUTURE- These are VERY similar functions for getting objects.
-        // Write a method to automatically do most of the work.
 
         this.doors = [];
         var doorArray = [];
@@ -803,8 +748,6 @@ class InGame extends Phaser.Scene {
             console.log("No enemies in this map!");
         }
             for(var i = 0; i < enemyArray.length; i++) {
-                //var enemy = this.matter.add.sprite(player.x + 50, player.y + 50,'pumpkin-dude').setScale(3,3);
-                //enemyrun(enemy);
                 var enemySprite = enemyArray[i].properties[0].value;
                 var scale = enemyArray[i].properties[1].value;
                 var enemy = this.matter.add.sprite(0,0,enemySprite).setScale(scale,scale);
@@ -1180,14 +1123,17 @@ class InGame extends Phaser.Scene {
             
             var xB = 0;
             var yB = 0;
+            var s = 1;
             if(currentMapNum == 0){
                 xB = 3050;
                 yB = 950;
+                s = 2;
             } else if(currentMapNum == 1){
                 xB = 3125;
                 yB = 2300;
+                s = 4;
             }
-            var doorPrompt = this.matter.add.image(xB, yB, 'block').setScale(2,2);
+            var doorPrompt = this.matter.add.image(xB, yB, 'block').setScale(s,s);
             doorPrompt.body.isStatic = true;
             doorPrompt.body.isSensor = true;
 
@@ -1213,6 +1159,9 @@ class InGame extends Phaser.Scene {
                     if(currentMapNum == 0){
                         textB = this.add.text(3150, 800, 'You need\na key!', { fontSize: '32px', fill: '#FFFFFF',fontFamily: 'Press-Start-2P' });
                     }
+                    else if(currentMapNum == 1){
+                        textB = this.add.text(3015, 2400, 'You need a coin\nto make a wish!', { fontSize: '32px', fill: '#FFFFFF',fontFamily: 'Press-Start-2P' });
+                    }
                 }
                 var power = 'powerup-keycard';
                 if(currentMapNum == 1){
@@ -1223,14 +1172,6 @@ class InGame extends Phaser.Scene {
                     if (textB !== undefined){
                         textB.destroy();
                     }
-                    var xyz = [];
-                    for (let i = 0; i < currentPowerups.length; i++) {
-                        if (currentPowerups[i] != power){
-                            xyz.push(currentPowerups[i]);
-                        }
-                    }
-                    currentPowerups = xyz;
-                    console.log(currentPowerups);
                     blockT = false;
                 };
             }
@@ -1565,18 +1506,6 @@ class InGame extends Phaser.Scene {
         });
                 
         
-        /*this.input.keyboard.on('keydown-ENTER', function (event) {
-            if(vialsT) {
-                // FUTURE - Pop up UI. Initial setup here.
-                scoreText.setVisible(false);
-                panel.setVisible(true);
-                panel.x = player.x;
-                panel.y = player.y;
-                // TESTING - Moving scenes using scene number interaction.
-                currentMapNum = (currentMapNum >= mapArray.length-1) ? 0 : currentMapNum+1;
-                //ref.scene.start('InGame');
-            }
-        });*/
         var tempCol;
         this.input.keyboard.on('keydown-G', function (event) {   
             console.log(player.x);
@@ -1619,6 +1548,7 @@ class InGame extends Phaser.Scene {
             this.add.text(3850, 2400, 'Press Space to attack.', { fontSize: '32px', fill: '#FFFFFF' , fontFamily: 'Press-Start-2P'});
             this.add.text(3550, 1990, 'Interact with the environment\n to solve puzzles.', { fontSize: '32px', fill: '#FFFFFF',fontFamily: 'Press-Start-2P' });
             this.add.text(495, 2150, 'You found the\ntime machine!', { fontSize: '32px', fill: '#FFFFFF',fontFamily: 'Press-Start-2P' });
+            this.add.text(150, 2150, 'Jump into the portal!', { fontSize: '32px', fill: '#FFFFFF',fontFamily: 'Press-Start-2P' });
             var portal = this.matter.add.sprite(290,1950, 'portal').setScale(2,2);
 
             var mainBody = Bodies.rectangle(290,1950, 50, 50, {
@@ -1770,8 +1700,6 @@ class InGame extends Phaser.Scene {
 
 
 
-
-            // Future-- Make particles work for boss teleports and enemy deaths, player sword swing, etc!
             var particles = ref.add.particles('pumpkin-dude');
 
             particles.gravity = 200;
@@ -1793,7 +1721,7 @@ class InGame extends Phaser.Scene {
         } else if(currentMapNum == 3) {
 
 
-            var portal = this.matter.add.sprite(1847,1050, 'door').setScale(7,7);
+            var portal = this.matter.add.sprite(1450,1050, 'door').setScale(7,7);
             portal.body.isSensor = true;
             portal.body.isStatic = true;
 
@@ -1846,6 +1774,7 @@ class InGame extends Phaser.Scene {
             enemy.y = y;
 
             enemy.enemySprite = enemySprite;
+            enemy.isEnemy = true;
 
             
             ref.matterCollision.addOnCollideActive({
@@ -1929,7 +1858,7 @@ class InGame extends Phaser.Scene {
             enemy.y = y;
 
             enemy.enemySprite = enemySprite;
-
+            enemy.isEnemy = true;
 
             ref.matterCollision.addOnCollideActive({
                 objectA: enemy,
