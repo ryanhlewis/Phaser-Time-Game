@@ -60,6 +60,17 @@ io.on('connection', (socket) => {
     }
     socket.join(msg);
     roomCode = msg;
+
+    /*var shirt = -1;
+    // Assign the shirt color
+    Object.entries(gameRooms[msg].playerChars).forEach(([key, value]) => {
+      //console.log(key, value) // "someKey" "some value", "hello" "world", "js javascript foreach object"
+      if(!value) {
+        shirt = key == "one" ? 0 : key == "two" ? 1 : key == "three" ? 2 : key == "four" ? 3 : -1;    
+        return
+      }
+    })
+    socket.emit("shirtNumber", shirt);*/
   });
 
   socket.on('delRoom', msg => {

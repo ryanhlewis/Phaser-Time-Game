@@ -53,6 +53,9 @@ class LoadAssets extends Phaser.Scene {
     preload() {
         // Player
         this.load.spritesheet('player', 'assets/spritesheets/player.png', { frameWidth: 48, frameHeight: 48 })
+        this.load.spritesheet('player1', 'assets/spritesheets/player1.png', { frameWidth: 48, frameHeight: 48 })
+        this.load.spritesheet('player3', 'assets/spritesheets/player3.png', { frameWidth: 48, frameHeight: 48 })
+
         
         // Hearts
         this.load.image('hearts-full', 'assets/icons/hearts-full.png');
@@ -1530,6 +1533,11 @@ class InGame extends Phaser.Scene {
             new Anim('walk',10,-1,'player',6,11),
             new Anim('jump',1,-1,'player',16,17),
             new Anim('attack',10,0,'player',12,15),
+            new Anim('stand1',10,-1,'player1',0,0),
+            new Anim('walk1',10,-1,'player1',6,11),
+            new Anim('jump1',1,-1,'player1',16,17),
+            new Anim('attack1',10,0,'player1',12,15),
+            new Anim('player',10,-1,'player3',6,11),
         ];
 
         animations.forEach(anim => { 
@@ -1739,6 +1747,7 @@ class InGame extends Phaser.Scene {
             createBoss('scientist',1.4,8000,900);
             createBoss('crab',10,7000,2500);
             createBoss('skeleton',10,2500,2100);
+            createBoss('player',10,1300,8000);
 
 
 
@@ -2103,7 +2112,7 @@ class InGame extends Phaser.Scene {
             player.body.centerOffset.y = 22;
             player.setVelocityX(-5);
             player.setVelocityY(-5);
-            player.anims.play('stand');
+            player.anims.play('stand1');
             player.body.ignoreGravity = true;
             player.setDepth(5);
 
@@ -2208,7 +2217,7 @@ class InGame extends Phaser.Scene {
                 
                 if(play != socket.id) {
 
-                    var player = ref.matter.add.sprite(400, 900, 'player').setScale(3,3);
+                    var player = ref.matter.add.sprite(400, 900, 'player1').setScale(3,3);
                     makePlayer(player);
                     players[play].player.destroy();
                     players[play].player = player;
@@ -2251,7 +2260,7 @@ class InGame extends Phaser.Scene {
             
             // Create new player
             console.log("player joined:" + msg);
-            var player = ref.matter.add.sprite(400, 900, 'player').setScale(3,3);
+            var player = ref.matter.add.sprite(400, 900, 'player1').setScale(3,3);
             makePlayer(player);
             var playerObj = new Player(player);
          
@@ -2261,7 +2270,7 @@ class InGame extends Phaser.Scene {
         socket.on('playerjoined',function(msg) {
             // Create new player
             console.log("player joined:" + msg[0]);
-            var player = ref.matter.add.sprite(400, 900, 'player').setScale(3,3);
+            var player = ref.matter.add.sprite(400, 900, 'player1').setScale(3,3);
             makePlayer(player);
             var playerObj = new Player(player);
 
@@ -2308,7 +2317,7 @@ class InGame extends Phaser.Scene {
 
         function inputFunction(player,x,y) {
             if(player.attacking) {
-                player.anims.play('attack',true);
+                player.anims.play('attack1',true);
                 return;
             }
             if (Math.floor(x) + 2 < player.x)
@@ -2316,26 +2325,26 @@ class InGame extends Phaser.Scene {
                 //player.setVelocityX(-5);
                 player.flipX = true;
                 if(player.onGround)
-                player.anims.play('walk', true);
+                player.anims.play('walk1', true);
             }
             else if (Math.floor(x) - 2 > player.x)
             {
                 //player.setVelocityX(5);
                 player.flipX = false;
                 if(player.onGround)
-                player.anims.play('walk', true);
+                player.anims.play('walk1', true);
             }
             else 
             {
                 //player.setVelocityX(0);
                 if(player.onGround)
-                player.anims.play('stand');
+                player.anims.play('stand1');
             }
         
             if (Math.floor(y) + 5 < player.y)
             {
                 //player.setVelocityY(-10);
-                player.anims.play('jump', true);
+                player.anims.play('jump1', true);
             }
         }
         
