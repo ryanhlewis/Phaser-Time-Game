@@ -5,6 +5,9 @@ const io = require('socket.io')(http);
 const port = process.env.PORT || 3000;
 
 const gameRooms = {};
+class gameRoom {
+  playerChars = {one:false,two:false,three:false,four:false};
+}
 
 /* Socket.IO docs
 
@@ -52,7 +55,8 @@ io.on('connection', (socket) => {
   socket.on('makeRoom', msg => {
     if(gameRooms[msg] === undefined) {
       console.log("Made room " + msg);
-      gameRooms[msg] = msg
+     // gameRooms[msg] = gameRoom();
+     gameRooms[msg] = msg;
     }
     socket.join(msg);
     roomCode = msg;

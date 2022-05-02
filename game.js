@@ -321,7 +321,6 @@ class InGame extends Phaser.Scene {
         // Reference, used for nested functions
         var ref = this;
 
-
         // Fonts
 
         WebFont.load({
@@ -397,6 +396,8 @@ class InGame extends Phaser.Scene {
         const solidMap = map.createLayer("Solid", tileset, 0, 200);
         const doorMap = map.createLayer("Door", tileset, 0, 200);
         const ladderMap = map.createLayer("Ladder", tileset, 0, 200);
+        const deathMap = map.createLayer("Death", tileset, 0, 200);
+
         
 
         const { Body, Bodies } = Phaser.Physics.Matter.Matter; // Native Matter modules
@@ -408,6 +409,7 @@ class InGame extends Phaser.Scene {
         foreMap.setScale(3,3);
         doorMap.setScale(3,3);
         ladderMap.setScale(3,3);
+        deathMap.setScale(3,3);
         solidMap.setSize(300,3);
  
 
@@ -471,6 +473,8 @@ class InGame extends Phaser.Scene {
                     player.allowGravity = false;
                     player.setVelocityY(-5);
                 }
+            } else if(collision.bodyB.isDeath) {
+                ref.scene.restart();
             }
         }
 
@@ -528,6 +532,23 @@ class InGame extends Phaser.Scene {
             } else {
                 doorObject.setData('teleport', [doorArray[i-1].x*3,doorArray[i-1].y*3 + 155]  );
             }
+        }
+
+        this.barriers = [];
+        var barriersArray = [];
+        try {
+            barriersArray = map.getObjectLayer('EnemyBarriers').objects;
+        } catch (e) {
+            console.log("No enemy barriers in this map.");
+        }
+        for(var i = 0; i < barriersArray.length; i++) {
+            var doorObject = this.matter.add.image(barriersArray[i].x*3, barriersArray[i].y*3 + 155 - barriersArray[i].height, 'door').setScale(3,6);
+            doorObject.body.isSensor = true;
+            doorObject.body.isStatic = true;
+            this.barriers.push(doorObject);
+            //createQuery(doorObject.x,doorObject.y);
+            // Attach door link
+
         }
 
         this.elevators = [];
@@ -797,6 +818,12 @@ class InGame extends Phaser.Scene {
 
                 enemy.on('destroy', function() {clearTimeout(enemy.routine)} );
 
+                this.matterCollision.addOnCollideStart({
+                    objectA: this.barriers,
+                    objectB: enemy,
+                    callback: this.turnAround,
+                    context: this
+                });
 
         }
   
@@ -807,7 +834,11 @@ class InGame extends Phaser.Scene {
         
         solidMap.setCollisionByExclusion([-1]);
         ladderMap.setCollisionByExclusion([-1]);
+        deathMap.setCollisionByExclusion([-1]);
+
         this.matter.world.convertTilemapLayer(ladderMap, {isSensor:true,isStatic:true,isLadder:true});
+        this.matter.world.convertTilemapLayer(deathMap, {isSensor:true,isStatic:true,isDeath:true});
+
         this.matter.world.convertTilemapLayer(solidMap);
 
 
@@ -1046,6 +1077,9 @@ class InGame extends Phaser.Scene {
                 setValue(healthBar,healthBar.value - 5);
                 entity.setVelocityX((attacker.x-entity.x)*-0.005);
                 entity.setVelocityY(-1);
+                if(healthBar.value <= 0) {
+                    triggerCredits();
+                }
 
 
             } else {
@@ -1075,6 +1109,14 @@ class InGame extends Phaser.Scene {
                 callback: this.hitEntity,
                 context: this
             });
+
+
+            this.turnAround = function(collision) {
+                console.log("enemy collided");
+                collision.bodyB.flipX = true;
+                collision.gameObjectB.setVelocityX(-10*collision.bodyB.velocity.x);
+                //collision.bodyB.velocity
+            }
 
             // Precise attacks- only register if it happened immediately.
             this.checkHitRight = function(collision) {
@@ -1798,6 +1840,13 @@ class InGame extends Phaser.Scene {
                 context: ref
             });
 
+            ref.matterCollision.addOnCollideStart({
+                objectA: ref.barriers,
+                objectB: enemy,
+                callback: ref.turnAround,
+                context: ref
+            });
+
 
 
             enemy.setOrigin(0.5,0.6);
@@ -1958,6 +2007,26 @@ class InGame extends Phaser.Scene {
             // point in dialogue, MAKE SURE to check for it!
 
         }
+
+        var credits = null
+        function triggerCredits() {
+            player.alpha = 0;
+            ref.add.image(0, -350, "level1-back").setOrigin(0).setScale(4).setScrollFactor(0);
+            var creditsText = "Credits\n\nTeam 12\nTime Studios\nAlyssa Burtscher\nAngela Chen\nRyan Lewis\n\nProducers\nExecutive Producer\tDr. Paul Toprac\nProducer\tAbhishek Sharma\n\n\nArt\nitch.io\nPlayer Character\tGame Endeavor\nLab Assets\t\tzrghr\nPortal\t\tCodeManu\nFarm Assets\t\tCainos\nCastle Assets\t\tAlcoholism\nSpooky Assets\tCorwin ZX\nNight Sky\tSavvyCow\nCrab Enemies\tCamacebra Games\nSkeleton Enemies\t\tBit Life\nBoss Level Grassy Dirt Assets\t\tMamaNeZakon\n\nMusic\npixabay.com\nLevel 1 \'Out of Time\'\t\tZakharValaha\nLevel 2 \'Knights of Camelot\'\t\tTommyMutiu\nLevel 3 \'Chinese Wind\'\t\tMuzaproduction\nBoss Level \'Action Drums Sport\'\t\tAleXZavesa"
+            credits = ref.add.text(150, 530, creditsText, { fixedWidth: 500, fixedHeight: 1000 })
+            credits.setScrollFactor(0);
+
+            recursiveScroll();
+
+        }
+        function recursiveScroll() {
+            runFunction(function() {
+                credits.y-=0.5;
+                recursiveScroll();
+            },1);
+        }
+        //triggerCredits();
+
 
 
         // Healthbar code
