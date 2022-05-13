@@ -1772,6 +1772,7 @@ class InGame extends Phaser.Scene {
         // Future- special map modifiers
         if(currentMap == mapArray[0]) {
             this.add.text(345, 875, 'Use the right and\nleft arrow keys\nto move.\n\nUse the up arrow\nkey to jump.', { fontSize: '32px', fill: '#FFFFFF' , fontFamily: 'Press-Start-2P' });
+            this.add.text(345, 1175, 'Use the ESC key to pause.', { fontSize: '32px', fill: '#FFFFFF' , fontFamily: 'Press-Start-2P' });
             
             if(roomCode != "") {
                 this.add.text(745, 1175, 'Your room code is ' + roomCode + "\n Invite your friends!", { fontSize: '32px', fill: '#FFFFFF' , fontFamily: 'Press-Start-2P' });
