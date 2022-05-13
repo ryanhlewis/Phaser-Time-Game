@@ -287,13 +287,6 @@ class MainMenu extends Phaser.Scene{
 
 
 
-
-
-
-
-
-
-
 class PauseMenu extends Phaser.Scene{
 	constructor(){
 		super("PauseMenu")
@@ -850,7 +843,7 @@ class InGame extends Phaser.Scene {
         }
         
         //Music
-        /*var s = 'music' + currentMapNum;
+        var s = 'music' + currentMapNum;
         if (currentMapNum !== lastMapNum){
             backgroundMusic.destroy();
             backgroundMusic = this.sound.add(s, { loop: true });
@@ -859,7 +852,7 @@ class InGame extends Phaser.Scene {
         else if (backgroundMusic === undefined){
             backgroundMusic = this.sound.add(s, { loop: true });
             backgroundMusic.play();
-        }*/
+        }
         
         lastMapNum = currentMapNum;
 
