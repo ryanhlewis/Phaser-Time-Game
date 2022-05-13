@@ -40,6 +40,9 @@ var roomCode = "";
 var powerup = 100;
 var poweruplevel = 0;
 var currentMapNum = 0;
+var paused = false;
+
+var credits = null
 
 
 
@@ -133,6 +136,8 @@ class LoadAssets extends Phaser.Scene {
         this.load.image('restart_button', 'assets/restart.png');
         this.load.image('exit_button', 'assets/exit.png');
         this.load.image('pause_button', 'assets/pause.png');
+        this.load.image('credits_button', 'assets/credits.png');
+
         
         //Music
         this.load.audio('music0', 'assets/music/out-of-time-15474.mp3');
@@ -316,7 +321,17 @@ class PauseMenu extends Phaser.Scene{
         let restartButton = rref.add.image(rref.sys.game.config.width/2, rref.sys.game.config.height/2+50, "restart_button").setScale(0.5);
         
         let exitButton = rref.add.image(rref.sys.game.config.width/2, rref.sys.game.config.height/2+150, "exit_button").setScale(0.4);
+    
         
+        let creditsButton = rref.add.image(rref.sys.game.config.width/2, rref.sys.game.config.height/2+250, "credits_button").setScale(0.4);
+        creditsButton.setInteractive();
+        creditsButton.on("pointerdown", ()=>{
+            console.log('clicked')
+            triggerCredits(rref,false);
+
+        })
+
+
         var hoverSprite = rref.add.image(100, 100, "hover").setScale(1.5);
         hoverSprite.setVisible(0);
     
@@ -334,9 +349,12 @@ class PauseMenu extends Phaser.Scene{
          }) 
         
         resumeButton.on("pointerdown", ()=>{
-            rref.scene.stop();
-            rref.scene.resume("InGame");
-            
+            //rref.scene.stop();
+            //rref.scene.resume("InGame");
+            //rref.scene.pause("PauseMenu");
+            //rref.scene.resume("InGame");
+            rref.scene.stop()
+
         })
         
         
@@ -372,9 +390,25 @@ class PauseMenu extends Phaser.Scene{
          }) 
         
         exitButton.on("pointerdown", ()=>{
+            rref.scene.stop();
+            rref.scene.stop("InGame");
+
             rref.scene.start("MainMenu");
         })
 
+
+        this.input.keyboard.on('keydown-ESC', function (event) {   
+            // PAUSE MENU
+            console.log("Pause menu has been disabled")
+            //rref.scene.pause("PauseMenu");
+            //rref.scene.resume("InGame");
+            player.alpha = 1;
+            rref.scene.stop()
+
+            if(credits !== undefined)
+                credits = null
+
+        });
 
 	}
 
@@ -590,7 +624,7 @@ class InGame extends Phaser.Scene {
             if(!collision.bodyB.isSensor && !collision.gameObjectB.isEnemy) {
                 player.onGround = true;
             }
-            else if (collision.gameObjectB.isEnemy && collision.gameObjectB.enemySprite == 'pumpkin-dude'){
+            else if (collision.gameObjectB !== undefined && collision.gameObjectB.isEnemy && collision.gameObjectB.enemySprite == 'pumpkin-dude'){
                 var col = {};
                 col.gameObjectA = collision.gameObjectB;
                 col.gameObjectB = collision.gameObjectA;
@@ -816,7 +850,7 @@ class InGame extends Phaser.Scene {
         }
         
         //Music
-        var s = 'music' + currentMapNum;
+        /*var s = 'music' + currentMapNum;
         if (currentMapNum !== lastMapNum){
             backgroundMusic.destroy();
             backgroundMusic = this.sound.add(s, { loop: true });
@@ -825,7 +859,7 @@ class InGame extends Phaser.Scene {
         else if (backgroundMusic === undefined){
             backgroundMusic = this.sound.add(s, { loop: true });
             backgroundMusic.play();
-        }
+        }*/
         
         lastMapNum = currentMapNum;
 
@@ -1079,7 +1113,7 @@ class InGame extends Phaser.Scene {
         
         
         
-        let pauseButton = this.add.image(this.sys.game.config.width/2+250, 35, "pause_button").setScale(0.25);
+        /*let pauseButton = this.add.image(this.sys.game.config.width/2+250, 35, "pause_button").setScale(0.25);
         
         pauseButton.setScrollFactor(0);
 
@@ -1093,10 +1127,15 @@ class InGame extends Phaser.Scene {
          }) 
         
         pauseButton.on("pointerdown", ()=>{
-            this.scene.pause("InGame");
-            this.scene.start("PauseMenu");
-        })
+            ref.scene.pause("InGame");
+            ref.scene.start("PauseMenu");
+        }) */
         
+        this.input.keyboard.on('keydown-ESC', function (event) {   
+            // PAUSE MENU
+            console.log("Pause menu has been enabled")
+            ref.scene.launch("PauseMenu");
+        });
         
         
         
@@ -1232,7 +1271,7 @@ class InGame extends Phaser.Scene {
                 entity.setVelocityX((attacker.x-entity.x)*-0.005);
                 entity.setVelocityY(-1);
                 if(healthBar.value <= 0) {
-                    triggerCredits();
+                    triggerCredits(ref,true);
                 }
 
 
@@ -2034,6 +2073,22 @@ class InGame extends Phaser.Scene {
             //enemyfollow(enemy);
             enemyrun(enemy);
 
+
+            if(name == 'player') {
+                enemy.on('destroy', function() { 
+                    //console.log(player.x + " " + player.y + " ")
+                    var portal = ref.matter.add.sprite(1440,8500, 'portal').setScale(1,1);
+                    portal.body.isSensor = true;
+                    portal.body.isStatic = true;
+                    ref.matterCollision.addOnCollideStart({
+                        objectA: portal,
+                        objectB: player,
+                        callback: triggerCredits(ref,true),
+                        context: ref
+                    });
+                    //triggerCredits(ref,true)
+                  })
+            }
             
 
             return enemy;
@@ -2176,23 +2231,7 @@ class InGame extends Phaser.Scene {
 
         }
 
-        var credits = null
-        function triggerCredits() {
-            player.alpha = 0;
-            ref.add.image(0, -350, "level1-back").setOrigin(0).setScale(4).setScrollFactor(0);
-            var creditsText = "Credits\n\nTeam 12\nTime Studios\nAlyssa Burtscher\nAngela Chen\nRyan Lewis\n\nProducers\nExecutive Producer\tDr. Paul Toprac\nProducer\tAbhishek Sharma\n\n\nArt\nitch.io\nPlayer Character\tGame Endeavor\nLab Assets\t\tzrghr\nPortal\t\tCodeManu\nFarm Assets\t\tCainos\nCastle Assets\t\tAlcoholism\nSpooky Assets\tCorwin ZX\nNight Sky\tSavvyCow\nCrab Enemies\tCamacebra Games\nSkeleton Enemies\t\tBit Life\nBoss Level Grassy Dirt Assets\t\tMamaNeZakon\n\nMusic\npixabay.com\nLevel 1 \'Out of Time\'\t\tZakharValaha\nLevel 2 \'Knights of Camelot\'\t\tTommyMutiu\nLevel 3 \'Chinese Wind\'\t\tMuzaproduction\nBoss Level \'Action Drums Sport\'\t\tAleXZavesa"
-            credits = ref.add.text(150, 530, creditsText, { fixedWidth: 500, fixedHeight: 1000 })
-            credits.setScrollFactor(0);
 
-            recursiveScroll();
-
-        }
-        function recursiveScroll() {
-            runFunction(function() {
-                credits.y-=0.5;
-                recursiveScroll();
-            },1);
-        }
         //triggerCredits();
 
 
@@ -2525,6 +2564,7 @@ class InGame extends Phaser.Scene {
 
     update() {
 //console.log(players);
+
         // PARALLAX EFFECT
         if((player.anims.currentAnim.key == "walk" || player.anims.currentAnim.key == "jump") && savedCameraPos != this.cameras.main.scrollX) {
             if(player.flipX) {
@@ -2610,6 +2650,38 @@ class InGame extends Phaser.Scene {
                     ms
                 )
             );
+        }
+
+        // Credits, used in two scenes
+
+        function triggerCredits(ref,bool) {
+            player.alpha = 0;
+            ref.add.image(0, -350, "level1-back").setOrigin(0).setScale(4).setScrollFactor(0);
+            var creditsText = "Credits\n\nTeam 12\nTime Studios\nAlyssa Burtscher\nAngela Chen\nRyan Lewis\n\nProducers\nExecutive Producer\tDr. Paul Toprac\nProducer\tAbhishek Sharma\n\n\nArt\nitch.io\nPlayer Character\tGame Endeavor\nLab Assets\t\tzrghr\nPortal\t\tCodeManu\nFarm Assets\t\tCainos\nCastle Assets\t\tAlcoholism\nSpooky Assets\tCorwin ZX\nNight Sky\tSavvyCow\nCrab Enemies\tCamacebra Games\nSkeleton Enemies\t\tBit Life\nBoss Level Grassy Dirt Assets\t\tMamaNeZakon\n\nMusic\npixabay.com\nLevel 1 \'Out of Time\'\t\tZakharValaha\nLevel 2 \'Knights of Camelot\'\t\tTommyMutiu\nLevel 3 \'Chinese Wind\'\t\tMuzaproduction\nBoss Level \'Action Drums Sport\'\t\tAleXZavesa"
+            credits = ref.add.text(150, 530, creditsText, { fixedWidth: 500, fixedHeight: 1000 })
+            credits.setScrollFactor(0);
+
+            recursiveScroll();
+
+            ref.input.keyboard.on('keydown-ESC', function (event) {   
+                // PAUSE MENU
+                console.log("Not end of game yet.")
+                
+                if(bool) {
+                    ref.scene.stop("InGame");
+                    ref.scene.stop("PauseMenu")
+                    ref.scene.start("MainMenu");
+                }
+            });
+
+        }
+        function recursiveScroll() {
+            runFunction1(function() {
+                if(credits !== undefined) {
+                credits.y-=0.5;
+                recursiveScroll();
+                }
+            },1);
         }
 
 // ACTUAL GAME START
