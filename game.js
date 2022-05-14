@@ -32,6 +32,7 @@ var blockT = false;
 var tempMap;
 var backgroundMusic;
 var lastMapNum = 0;
+var allowRestart = true;
 
 // Checkpoint, for any death function usage.
 var lastCheckpoint;
@@ -614,7 +615,7 @@ class InGame extends Phaser.Scene {
         
         function onGround(collision) {
             // Detecting onGround for jumping
-            if(!collision.bodyB.isSensor && !collision.gameObjectB.isEnemy) {
+            if(!collision.bodyB.isSensor && collision.gameObjectB !== undefined && !collision.gameObjectB.isEnemy) {
                 player.onGround = true;
             }
             else if (collision.gameObjectB !== undefined && collision.gameObjectB.isEnemy && collision.gameObjectB.enemySprite == 'pumpkin-dude'){
@@ -632,7 +633,12 @@ class InGame extends Phaser.Scene {
                     player.setVelocityY(-5);
                 }
             } else if(collision.bodyB.isDeath) {
-                ref.scene.restart();
+                if(allowRestart) {
+                    allowRestart = false;
+                    runFunction1(function() {allowRestart = true}, 1000)
+                    ref.scene.stop();
+                    ref.scene.start("InGame");
+                }
             }
         }
 
@@ -843,6 +849,7 @@ class InGame extends Phaser.Scene {
         }
         
         //Music
+        try {
         var s = 'music' + currentMapNum;
         if (currentMapNum !== lastMapNum){
             backgroundMusic.destroy();
@@ -853,6 +860,9 @@ class InGame extends Phaser.Scene {
             backgroundMusic = this.sound.add(s, { loop: true });
             backgroundMusic.play();
         }
+    } catch(e) {
+        console.log("Musical exception!");
+    }
         
         lastMapNum = currentMapNum;
 
@@ -1754,7 +1764,12 @@ class InGame extends Phaser.Scene {
         
         function backInTime() {
             health = 100;
-            ref.scene.restart();
+            if(allowRestart) {
+                allowRestart = false;
+                runFunction1(function() {allowRestart = true}, 1000)
+                ref.scene.stop();
+                ref.scene.start("InGame");
+            }
         }
         
         this.input.keyboard.on('keydown-B', function (event) {   
@@ -1907,7 +1922,7 @@ class InGame extends Phaser.Scene {
             // The first checkpoint puts the player past this starter text--
 
             // I could easily check for a checkpoint array, but it's always fun to try something (new!)
-            if(player.x < 500) {
+            if(lastCheckpoint === undefined) {
                 textView.text = 'You should not be here.';
 
                 this.cameras.main.shake(1000);
@@ -1922,8 +1937,10 @@ class InGame extends Phaser.Scene {
                 }, 5000);
 
                 changeText("", 10000);
-            } else if(player.x > 500 && player.x < 5000) {
-                textView.text = "Reset from Checkpoint 1";
+            } else {
+                textView.text = "Reset from Checkpoint";
+                textView.x = lastCheckpoint.x;
+                textView.y = lastCheckpoint.y - 30;
                 changeText("", 5000);
             }
 
@@ -1933,7 +1950,7 @@ class InGame extends Phaser.Scene {
             createBoss('pumpkin-dude',10,1970,900);
             createBoss('scientist',1.4,8000,900);
             createBoss('crab',10,7000,2500);
-            createBoss('skeleton',10,2500,2100);
+            createBoss('skeleton',10,2700,2000);
             createBoss('player',10,1300,8000);
 
 
